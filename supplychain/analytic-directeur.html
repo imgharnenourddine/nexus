@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics & Prédictions - NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #F5C518;
+            border: 1px solid rgba(245, 197, 24, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover {
+            background: rgba(245, 197, 24, 0.1);
+            border-color: #F5C518;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        /* Filter Tabs */
+        .filter-tab {
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #9ca3af;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .filter-tab.active {
+            background-color: #F5C518;
+            color: #08090c;
+            border-color: #F5C518;
+        }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tableau de bord
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i> Commandes
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="package" class="w-5 h-5"></i> Stock
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Fournisseurs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="globe" class="w-5 h-5"></i> Transporteurs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="building-2" class="w-5 h-5"></i> Clients
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Retours
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-[#F5C518]"></i> Analytics
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium mt-4">
+                    <i data-lucide="cpu" class="w-5 h-5"></i> Agent IA
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Directeur</p>
+                        <p class="text-xs text-gray-500">TechBuild</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <h1 class="text-xl font-bold text-white">Analytics & Prédictions</h1>
+            
+            <div class="flex items-center gap-6">
+                <div class="flex bg-white/[0.02] p-1 rounded-lg border border-white/5" id="period-selector">
+                    <button class="filter-tab">7 jours</button>
+                    <button class="filter-tab active">30 jours</button>
+                    <button class="filter-tab">90 jours</button>
+                </div>
+                
+                <div class="w-px h-6 bg-white/10"></div>
+
+                <button class="relative text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                </button>
+                
+                <div class="w-px h-6 bg-white/10"></div>
+                
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-10">
+            
+            <section>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Chiffre d'affaires 30 jours</p>
+                        <h3 class="text-3xl font-black text-white">2 340 000 <span class="text-lg text-gray-500">MAD</span></h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +12% ce mois</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Commandes livrées</p>
+                        <h3 class="text-3xl font-black text-white">47</h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +8 ce mois</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Taux de livraison à temps</p>
+                        <h3 class="text-3xl font-black text-white">94%</h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +2% ce mois</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Taux de retour</p>
+                        <h3 class="text-3xl font-black text-white">3.2%</h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-down" class="w-3 h-3"></i> -0.5% ce mois</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Score moyen fournisseurs</p>
+                        <h3 class="text-3xl font-black text-white">85<span class="text-lg text-gray-500">/100</span></h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +3 ce mois</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border border-[#F5C518]/30 bg-gradient-to-r from-[#F5C518]/5 to-transparent">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Économies réalisées par l'IA</p>
+                        <h3 class="text-3xl font-black text-[#F5C518]">34 200 <span class="text-lg opacity-70">MAD</span></h3>
+                        <p class="text-xs text-[#F5C518] mt-2 font-bold flex items-center gap-1.5"><i data-lucide="cpu" class="w-3 h-3"></i> Automatisé via négociation Mistral</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                            <h2 class="text-lg font-bold text-white">Prédictions rupture de stock — 30 jours</h2>
+                        </div>
+                        <div class="p-2 bg-[#F5C518]/10 rounded-lg border border-[#F5C518]/20 shrink-0">
+                            <i data-lucide="cpu" class="w-4 h-4 text-[#F5C518]"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="h-80 w-full mb-4">
+                        <canvas id="chartStockRupture"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-500 flex items-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5"></i> Prédictions générées par le modèle XGBoost sur la base de l'historique de consommation et des commandes clients prédites.</p>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Évolution du chiffre d'affaires — 6 mois</h2>
+                    </div>
+                    <div class="h-64 w-full">
+                        <canvas id="chartCA"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Commandes par client — 30 jours</h2>
+                    </div>
+                    <div class="h-64 w-full">
+                        <canvas id="chartClients"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Prédictions commandes clients — 30 prochains jours</h2>
+                    </div>
+                    <div class="h-80 w-full">
+                        <canvas id="chartPredictions"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Performance fournisseurs (Radar)</h2>
+                    </div>
+                    <div class="h-[300px] w-full flex justify-center">
+                        <canvas id="chartFournisseurs"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Fiabilité transporteurs (Livraison à temps)</h2>
+                    </div>
+                    <div class="h-[300px] w-full">
+                        <canvas id="chartTransporteurs"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Analyse des retours — 30 jours</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                        <div class="h-64 w-full flex justify-center">
+                            <canvas id="chartRetoursMotifs"></canvas>
+                        </div>
+                        <div class="h-64 w-full">
+                            <canvas id="chartRetoursProduits"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-start gap-3 w-max mx-auto md:mx-0">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400 mt-0.5 shrink-0"></i>
+                        <p class="text-sm text-red-300 font-medium">
+                            <strong class="text-red-400">Défaut série détecté</strong> — GPU NVIDIA RTX 4090 — 3 retours ce mois — NvidiaPartner pénalisé automatiquement.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-4 gap-3">
+                            <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                            <h2 class="text-xl font-bold text-white">Rapport mensuel — Avril 2026</h2>
+                        </div>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li class="flex items-start gap-2"><span class="text-[#F5C518] font-bold">—</span> CA en hausse de 12% par rapport à mars.</li>
+                            <li class="flex items-start gap-2"><span class="text-[#F5C518] font-bold">—</span> Taux de livraison à temps amélioré de 2 points (94%).</li>
+                            <li class="flex items-start gap-2"><span class="text-[#F5C518] font-bold">—</span> 7 retours traités dont 5 liés à NvidiaPartner.</li>
+                            <li class="flex items-start gap-2"><span class="text-[#F5C518] font-bold">—</span> Économies de 34 200 MAD réalisées grâce à la négociation automatique (Mistral AI).</li>
+                            <li class="flex items-start gap-2"><span class="text-[#F5C518] font-bold">—</span> Score moyen fournisseurs en hausse de 3 points (85/100).</li>
+                            <li class="flex items-start gap-2"><span class="text-[#F5C518] font-bold">—</span> Alerte défaut série GPU RTX 4090 détectée et escaladée.</li>
+                        </ul>
+                    </div>
+                    <button class="btn-neon px-8 py-4 rounded-xl font-bold text-sm tracking-wide flex items-center gap-2 shrink-0">
+                        Télécharger le rapport PDF <i data-lucide="download" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </section>
+
+            <div class="h-12"></div>
+        </div>
+    </main>
+
+    <script>
+        // Initialisation Icônes
+        lucide.createIcons();
+
+        // Sélecteur de période (UI uniquement)
+        document.querySelectorAll('.filter-tab').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
+
+        // Configuration globale Chart.js
+        Chart.defaults.color = '#9ca3af';
+        Chart.defaults.font.family = "'Space Grotesk', sans-serif";
+        const gridColor = 'rgba(255, 255, 255, 0.05)';
+
+        // 1. Prédictions Rupture (Horizontal Bar)
+        new Chart(document.getElementById('chartStockRupture').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['GPU RTX 4090', 'Processeur i9', 'Carte mère MSI', 'SSD NVMe 2TB', 'RAM DDR5 32GB', 'GPU RTX 4070', 'Processeur i7', 'Alimentation 1000W', 'SSD NVMe 1TB'],
+                datasets: [{
+                    label: 'Jours avant rupture estimée',
+                    data: [8, 12, 15, 18, 24, 28, 31, 35, 42],
+                    backgroundColor: (ctx) => {
+                        const val = ctx.raw;
+                        if(val < 10) return '#ef4444'; // Rouge urgent
+                        if(val <= 20) return '#f97316'; // Orange warning
+                        return '#22c55e'; // Vert OK
+                    },
+                    borderRadius: 4,
+                    barThickness: 16
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true, maintainAspectRatio: false, backgroundColor: 'transparent',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: gridColor }, border: { display: false } },
+                    y: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+
+        // 2. CA sur 6 mois (Line with Area)
+        new Chart(document.getElementById('chartCA').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr'],
+                datasets: [{
+                    label: 'Chiffre d\'Affaires (MAD)',
+                    data: [1850000, 2100000, 1950000, 2050000, 2200000, 2340000],
+                    borderColor: '#F5C518',
+                    backgroundColor: 'rgba(245, 197, 24, 0.08)',
+                    fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4,
+                    pointBackgroundColor: '#08090c', pointBorderColor: '#F5C518', pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, backgroundColor: 'transparent',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, border: { display: false } },
+                    y: { grid: { color: gridColor }, border: { display: false }, min: 1500000 }
+                }
+            }
+        });
+
+        // 3. Commandes par Client (Vertical Bar)
+        new Chart(document.getElementById('chartClients').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['EduTech Maroc', 'CyberArena', 'CorpIT Solutions', 'DataCenter MA', 'Particuliers'],
+                datasets: [{
+                    label: 'Commandes ce mois',
+                    data: [12, 18, 9, 5, 3],
+                    backgroundColor: ['#F5C518', '#3b82f6', '#22c55e', '#f97316', '#6b7280'],
+                    borderRadius: 6, barThickness: 32
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, backgroundColor: 'transparent',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, border: { display: false } },
+                    y: { grid: { color: gridColor }, border: { display: false }, beginAtZero: true }
+                }
+            }
+        });
+
+        // 4. Prédictions Commandes 30 Jours (Line)
+        const labels30Days = Array.from({length: 7}, (_, i) => `1${3 + i*5} Avr`);
+        new Chart(document.getElementById('chartPredictions').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['13 Avr', '18 Avr', '23 Avr', '28 Avr', '03 Mai', '08 Mai', '12 Mai'],
+                datasets: [
+                    { label: 'EduTech Maroc', data: [0, 5, 12, 25, 0, 0, 10], borderColor: '#F5C518', tension: 0.4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 6 },
+                    { label: 'CyberArena', data: [0, 20, 0, 0, 30, 15, 0], borderColor: '#3b82f6', tension: 0.4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 6 },
+                    { label: 'CorpIT Solutions', data: [0, 0, 15, 0, 0, 0, 10], borderColor: '#22c55e', tension: 0.4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 6 },
+                    { label: 'DataCenter MA', data: [0, 40, 40, 0, 50, 0, 0], borderColor: '#f97316', tension: 0.4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 6 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, backgroundColor: 'transparent',
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20 } },
+                    annotation: {
+                        annotations: {
+                            line1: { type: 'line', xMin: '13 Avr', xMax: '13 Avr', borderColor: '#6b7280', borderDash: [5, 5], borderWidth: 2, label: { content: 'Aujourd\'hui', display: true, position: 'start' } }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, border: { display: false } },
+                    y: { grid: { color: gridColor }, border: { display: false }, title: { display: true, text: 'Volume estimé (PC)', color: '#6b7280' } }
+                }
+            }
+        });
+
+        // 5. Radar Performance Fournisseurs
+        new Chart(document.getElementById('chartFournisseurs').getContext('2d'), {
+            type: 'radar',
+            data: {
+                labels: ['Prix', 'Délai', 'Fiabilité', 'Qualité', 'Réactivité'],
+                datasets: [
+                    { label: 'SamsungSSD', data: [85, 90, 95, 95, 88], borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', borderWidth: 2 },
+                    { label: 'IntelDistrib', data: [80, 85, 92, 90, 82], borderColor: '#F5C518', backgroundColor: 'rgba(245, 197, 24, 0.1)', borderWidth: 2 },
+                    { label: 'NvidiaPartner', data: [55, 60, 68, 72, 65], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, backgroundColor: 'transparent',
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        pointLabels: { color: '#9ca3af', font: { family: "'Space Grotesk', sans-serif" } },
+                        ticks: { display: false, min: 0, max: 100 }
+                    }
+                }
+            }
+        });
+
+        // 6. Transporteurs Fiabilité (Horizontal Bar)
+        new Chart(document.getElementById('chartTransporteurs').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['DHL Express', 'FedEx', 'Aramex', 'Amana Express', 'CTM Messagerie'],
+                datasets: [{
+                    label: 'Taux de livraison à temps (%)',
+                    data: [98, 97, 95, 91, 88],
+                    backgroundColor: (ctx) => ctx.raw >= 90 ? '#22c55e' : '#f97316',
+                    borderRadius: 4, barThickness: 20
+                }]
+            },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false, backgroundColor: 'transparent',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: gridColor }, border: { display: false }, min: 80, max: 100 },
+                    y: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+
+        // 7. Retours par Motif (Pie)
+        new Chart(document.getElementById('chartRetoursMotifs').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: ['Défaut fournisseur', 'Erreur interne', 'Annulation client', 'Endommagé transport'],
+                datasets: [{
+                    data: [57, 14, 15, 14],
+                    backgroundColor: ['#ef4444', '#f97316', '#3b82f6', '#6b7280'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, backgroundColor: 'transparent',
+                plugins: { legend: { position: 'right', labels: { color: '#9ca3af', boxWidth: 12, padding: 15 } } }
+            }
+        });
+
+        // 8. Retours par Produit (Vertical Bar)
+        new Chart(document.getElementById('chartRetoursProduits').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['PC Gaming Premium', 'PC Gaming Standard', 'PC Workstation', 'PC Bureau', 'Serveur Entry'],
+                datasets: [{
+                    label: 'Nombre de retours',
+                    data: [3, 1, 1, 1, 1],
+                    backgroundColor: ['#ef4444', '#f97316', '#f97316', '#f97316', '#f97316'],
+                    borderRadius: 4, barThickness: 24
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, backgroundColor: 'transparent',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, border: { display: false }, ticks: { display: false } },
+                    y: { grid: { color: gridColor }, border: { display: false }, beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

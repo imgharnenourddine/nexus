@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation de commande - NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #F5C518;
+            border: 1px solid rgba(245, 197, 24, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover {
+            background: rgba(245, 197, 24, 0.1);
+            border-color: #F5C518;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+        
+        .brand-logo-dark { height: 24px; vertical-align: middle; filter: invert(1); }
+        .brand-suffix-dark { font-weight: 700; color: #1a1a1a; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        /* Custom Checkbox */
+        .custom-checkbox {
+            appearance: none;
+            background-color: rgba(255, 255, 255, 0.05);
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.25em;
+            height: 1.25em;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.25em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .custom-checkbox::before {
+            content: "";
+            width: 0.75em;
+            height: 0.75em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #08090c;
+            background-color: #08090c;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        .custom-checkbox:checked {
+            background-color: #F5C518;
+            border-color: #F5C518;
+        }
+        .custom-checkbox:checked::before {
+            transform: scale(1);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tableau de bord
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Fournisseurs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium">
+                    <i data-lucide="send" class="w-5 h-5 text-[#F5C518]"></i> Appels d'offre
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="file-text" class="w-5 h-5"></i> Commandes fournisseurs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="package" class="w-5 h-5"></i> Stock lecture seule
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Ahmed Bennani</p>
+                        <p class="text-xs text-gray-500">Resp. Achats</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <h1 class="text-xl font-bold text-white">Validation de commande — AMDSupply</h1>
+            
+            <div class="flex items-center gap-6">
+                <button class="relative text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#08090c]"></span>
+                </button>
+                <div class="w-px h-6 bg-white/10"></div>
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-10">
+            
+            <section class="max-w-4xl mx-auto w-full mb-8">
+                <div class="flex items-center justify-between relative">
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-white/10 z-0"></div>
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2 w-2/3 h-1 bg-gradient-to-r from-green-500 to-[#F5C518] z-0"></div>
+
+                    <div class="relative z-10 flex flex-col items-center gap-2">
+                        <div class="w-10 h-10 rounded-full bg-[#0c0d12] border-2 border-green-500 flex items-center justify-center text-green-500">
+                            <i data-lucide="check" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xs font-bold text-green-500 uppercase tracking-wider">Appel d'offre</span>
+                    </div>
+
+                    <div class="relative z-10 flex flex-col items-center gap-2">
+                        <div class="w-10 h-10 rounded-full bg-[#0c0d12] border-2 border-green-500 flex items-center justify-center text-green-500">
+                            <i data-lucide="check" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xs font-bold text-green-500 uppercase tracking-wider">Comparaison devis</span>
+                    </div>
+
+                    <div class="relative z-10 flex flex-col items-center gap-2">
+                        <div class="w-10 h-10 rounded-full bg-[#0c0d12] border-2 border-[#F5C518] flex items-center justify-center text-[#F5C518] shadow-[0_0_15px_rgba(245,197,24,0.3)]">
+                            <i data-lucide="edit-2" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xs font-bold text-[#F5C518] uppercase tracking-wider">Validation commande</span>
+                    </div>
+
+                    <div class="relative z-10 flex flex-col items-center gap-2">
+                        <div class="w-10 h-10 rounded-full bg-[#0c0d12] border-2 border-gray-600 flex items-center justify-center text-gray-500">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Bon de commande PDF</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Résumé de la commande</h2>
+                    </div>
+                    
+                    <div class="space-y-4 text-sm flex-1">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Fournisseur</span>
+                            <span class="font-bold text-white">AMDSupply</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Pays</span>
+                            <span class="font-bold text-white">Chine</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Composant</span>
+                            <span class="font-bold text-white">GPU NVIDIA RTX 4090</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Quantité</span>
+                            <span class="font-bold text-white">20 unités</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Prix unitaire</span>
+                            <span class="font-bold text-white">1 780 MAD</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Prix total</span>
+                            <span class="font-black text-[#F5C518] text-xl">35 600 MAD</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Délai de livraison</span>
+                            <span class="font-bold text-white">16 jours</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Date de livraison estimée</span>
+                            <span class="font-bold text-white">28 Avril 2026</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Conditions de paiement</span>
+                            <span class="font-bold text-white">30 jours</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-2">
+                            <span class="text-gray-400">Référence appel d'offre</span>
+                            <span class="font-mono text-gray-300">AO-2026-047</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-white/10">
+                        <div class="flex justify-between text-xs text-gray-400 mb-2">
+                            <span>Budget mensuel restant après cette commande :</span>
+                            <span class="font-bold text-white">64 400 MAD sur 100 000 MAD</span>
+                        </div>
+                        <div class="w-full h-2 bg-black/50 rounded-full overflow-hidden">
+                            <div class="h-full bg-[#F5C518] rounded-full" style="width: 35.6%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Informations fournisseur</h2>
+                    </div>
+
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-16 h-16 rounded-full bg-[#F5C518]/10 border border-[#F5C518]/30 flex items-center justify-center text-[#F5C518] text-xl font-black shrink-0">
+                            AS
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white mb-1">AMDSupply</h3>
+                            <div class="flex items-center gap-3 text-sm text-gray-400">
+                                <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Chine</span>
+                                <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                                <span class="flex items-center gap-1 hover:text-white transition cursor-pointer"><i data-lucide="mail" class="w-3.5 h-3.5"></i> procurement@amdsupply.cn</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6 flex-1">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1.5">
+                                <span class="text-gray-400">Score actuel global</span>
+                                <span class="font-bold text-green-400">89/100</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-black/50 rounded-full overflow-hidden">
+                                <div class="h-full bg-green-400 rounded-full" style="width: 89%"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                                <p class="text-xs text-gray-400 mb-1 uppercase tracking-wider font-semibold">Historique</p>
+                                <p class="text-xl font-bold text-white">12 <span class="text-sm font-normal text-gray-400">commandes passées</span></p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                                <p class="text-xs text-gray-400 mb-1 uppercase tracking-wider font-semibold">Livraison à temps</p>
+                                <p class="text-xl font-bold text-white">87%</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex items-start gap-3">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-green-400 shrink-0 mt-0.5"></i>
+                            <p class="text-sm text-green-400 font-medium">Aucun retour défectueux enregistré avec ce fournisseur sur les 12 derniers mois.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-lg font-bold text-white">Aperçu du bon de commande</h2>
+                </div>
+
+                <div class="bg-white text-[#1a1a1a] p-8 max-w-[600px] mx-auto rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+                    
+                    <div class="flex justify-between items-start border-b-2 border-gray-200 pb-6 mb-6">
+                        <div class="flex items-center">
+                            <span class="nexus-brand">
+                                <img src="logo.png" alt="N" class="brand-logo-dark">
+                                <span class="brand-suffix-dark">exus</span>
+                            </span>
+                        </div>
+                        <div class="text-right text-xs text-gray-600">
+                            <p class="font-bold text-sm text-black mb-1">TechBuild Industries</p>
+                            <p>Parc Industriel Sapino, Nouaceur</p>
+                            <p>Casablanca, Maroc</p>
+                            <p>contact@techbuild.ma</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-8">
+                        <h1 class="text-2xl font-black tracking-widest mb-2">BON DE COMMANDE</h1>
+                        <div class="flex justify-center gap-6 text-sm font-medium text-gray-600">
+                            <p>N° <span class="text-black font-bold">BC-2026-0312</span></p>
+                            <p>Date : <span class="text-black font-bold">12 Avril 2026</span></p>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">À l'attention de :</p>
+                        <p class="font-bold text-sm">AMDSupply Procurement</p>
+                        <p class="text-sm text-gray-600">Shenzhen, Chine</p>
+                        <p class="text-sm text-gray-600">procurement@amdsupply.cn</p>
+                    </div>
+
+                    <table class="w-full text-left text-sm mb-8 border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="py-2 px-3 border-b border-gray-300 font-bold text-xs uppercase text-gray-600">Référence</th>
+                                <th class="py-2 px-3 border-b border-gray-300 font-bold text-xs uppercase text-gray-600">Désignation</th>
+                                <th class="py-2 px-3 border-b border-gray-300 font-bold text-xs uppercase text-gray-600 text-center">Qté</th>
+                                <th class="py-2 px-3 border-b border-gray-300 font-bold text-xs uppercase text-gray-600 text-right">P.U. (MAD)</th>
+                                <th class="py-2 px-3 border-b border-gray-300 font-bold text-xs uppercase text-gray-600 text-right">Total (MAD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-3 px-3 border-b border-gray-200 font-mono text-xs text-gray-500">RTX-4090-NV</td>
+                                <td class="py-3 px-3 border-b border-gray-200 font-bold">GPU NVIDIA RTX 4090</td>
+                                <td class="py-3 px-3 border-b border-gray-200 text-center font-medium">20</td>
+                                <td class="py-3 px-3 border-b border-gray-200 text-right">1 780</td>
+                                <td class="py-3 px-3 border-b border-gray-200 text-right font-bold">35 600</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="flex justify-end">
+                        <div class="w-64">
+                            <div class="flex justify-between py-1 text-sm text-gray-600">
+                                <span>Total HT</span>
+                                <span class="font-medium text-black">35 600 MAD</span>
+                            </div>
+                            <div class="flex justify-between py-1 text-sm text-gray-600 border-b border-gray-200 pb-2 mb-2">
+                                <span>TVA (20%)</span>
+                                <span class="font-medium text-black">7 120 MAD</span>
+                            </div>
+                            <div class="flex justify-between py-1 text-base font-black">
+                                <span>Total TTC</span>
+                                <span>42 720 MAD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-12 pt-4 border-t border-gray-200">
+                        <p class="text-xs text-gray-500"><span class="font-bold text-gray-700">Conditions de paiement :</span> 30 jours net date de facture.</p>
+                        <p class="text-xs text-gray-500 mt-1">Généré par le système NEXUS AI.</p>
+                    </div>
+
+                </div>
+                
+                <p class="text-center text-xs text-gray-500 mt-4 flex items-center justify-center gap-1.5">
+                    <i data-lucide="info" class="w-4 h-4"></i> Ce document sera généré en PDF et envoyé automatiquement à AMDSupply par email dès validation.
+                </p>
+            </section>
+
+            <section id="validation-section" class="max-w-3xl mx-auto">
+                <div class="glass-panel p-8 rounded-2xl border-2 border-[#F5C518]/50 shadow-[0_0_30px_rgba(245,197,24,0.1)] relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-[#F5C518]/10 blur-3xl rounded-full pointer-events-none"></div>
+                    
+                    <h2 class="text-xl font-black text-white mb-2 relative z-10">Confirmer et envoyer la commande</h2>
+                    <p class="text-gray-300 text-sm mb-6 relative z-10">
+                        Vous êtes sur le point de passer une commande de <span class="text-white font-bold">20 unités GPU NVIDIA RTX 4090</span> auprès de <span class="text-white font-bold">AMDSupply</span> pour un montant total de <span class="text-[#F5C518] font-bold">35 600 MAD HT</span>.
+                    </p>
+
+                    <div class="space-y-4 mb-8 relative z-10 border-t border-white/10 pt-6">
+                        <label class="flex items-start gap-4 cursor-pointer group">
+                            <input type="checkbox" id="check-info" class="custom-checkbox mt-0.5 shrink-0">
+                            <span class="text-sm text-gray-400 group-hover:text-white transition-colors select-none">J'ai vérifié les informations de la commande et je confirme leur exactitude.</span>
+                        </label>
+                        <label class="flex items-start gap-4 cursor-pointer group">
+                            <input type="checkbox" id="check-budget" class="custom-checkbox mt-0.5 shrink-0">
+                            <span class="text-sm text-gray-400 group-hover:text-white transition-colors select-none">J'autorise le débit de 35 600 MAD sur le budget mensuel achats.</span>
+                        </label>
+                    </div>
+
+                    <button id="btn-validate" disabled class="w-full py-4 rounded-xl font-bold text-lg tracking-wide flex justify-center items-center gap-3 bg-gray-600 text-gray-400 opacity-50 cursor-not-allowed transition-all duration-300 relative z-10">
+                        Valider et envoyer le bon de commande <i data-lucide="send" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </section>
+
+            <div class="h-12"></div>
+        </div>
+    </main>
+
+    <script>
+        // Initialisation des icônes
+        lucide.createIcons();
+
+        // Logique des Checkboxes et Bouton
+        const cbInfo = document.getElementById('check-info');
+        const cbBudget = document.getElementById('check-budget');
+        const btnValidate = document.getElementById('btn-validate');
+        const validationSection = document.getElementById('validation-section');
+
+        function updateButtonState() {
+            if (cbInfo.checked && cbBudget.checked) {
+                // Activer le bouton
+                btnValidate.disabled = false;
+                btnValidate.classList.remove('bg-gray-600', 'text-gray-400', 'opacity-50', 'cursor-not-allowed');
+                btnValidate.classList.add('btn-neon');
+            } else {
+                // Désactiver le bouton
+                btnValidate.disabled = true;
+                btnValidate.classList.add('bg-gray-600', 'text-gray-400', 'opacity-50', 'cursor-not-allowed');
+                btnValidate.classList.remove('btn-neon');
+            }
+        }
+
+        cbInfo.addEventListener('change', updateButtonState);
+        cbBudget.addEventListener('change', updateButtonState);
+
+        // Logique de succès après clic
+        btnValidate.addEventListener('click', function() {
+            // Animation out / Remplacement de l'écran
+            validationSection.innerHTML = `
+                <div class="glass-panel p-10 rounded-2xl border border-green-500/30 flex flex-col items-center justify-center text-center animate-fade-in shadow-[0_0_40px_rgba(34,197,94,0.1)]">
+                    <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6 border-2 border-green-400 animate-bounce">
+                        <i data-lucide="check" class="w-10 h-10 text-green-400"></i>
+                    </div>
+                    <h2 class="text-3xl font-black text-white mb-3">Commande validée avec succès</h2>
+                    <p class="text-gray-300 text-lg mb-2">Bon de commande <span class="font-bold text-white">BC-2026-0312</span> envoyé à <span class="font-bold text-white">procurement@amdsupply.cn</span></p>
+                    <p class="text-green-400 text-sm font-medium flex items-center gap-2 mb-8"><i data-lucide="truck" class="w-4 h-4"></i> Suivi de livraison activé — Prochaine relance automatique dans 24h</p>
+                    
+                    <a href="suivi-livraison.html" class="btn-ghost px-8 py-3 rounded-xl font-bold text-sm transition hover:bg-white/5 hover:text-white hover:border-white">
+                        Voir le suivi de livraison
+                    </a>
+                </div>
+            `;
+            
+            // Re-générer les icônes pour le nouveau HTML injecté
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

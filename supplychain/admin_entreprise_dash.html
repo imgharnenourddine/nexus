@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord Admin - NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #F5C518;
+            border: 1px solid rgba(245, 197, 24, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover {
+            background: rgba(245, 197, 24, 0.1);
+            border-color: #F5C518;
+        }
+
+        /* Inputs */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+
+        /* Règle stricte Logo */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        /* Tables & Badges */
+        .table-row-alt:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
+        
+        .badge-active { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .badge-pending { background-color: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .badge-disabled { background-color: rgba(156, 163, 175, 0.1); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.2); }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #08090c; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#overview" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 text-[#F5C518]"></i> Tableau de bord
+                </a>
+                <a href="#responsables" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="users" class="w-5 h-5"></i> Responsables
+                </a>
+                <a href="#clients" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="building-2" class="w-5 h-5"></i> Clients
+                </a>
+                <a href="#fournisseurs" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Fournisseurs
+                </a>
+                <a href="#produits" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="box" class="w-5 h-5"></i> Produits
+                </a>
+                <a href="#transporteurs" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="globe" class="w-5 h-5"></i> Transporteurs
+                </a>
+                <a href="#budgets" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i> Budgets & Seuils
+                </a>
+                <a href="#parametres" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium mt-4">
+                    <i data-lucide="settings" class="w-5 h-5"></i> Paramètres
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20">
+                    <div>
+                        <p class="text-sm font-bold text-white">Admin TechBuild</p>
+                        <p class="text-xs text-gray-500">Super Admin</p>
+                    </div>
+                </div>
+                <button class="text-gray-500 hover:text-red-400 transition-colors">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c]">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <h1 class="text-xl font-bold text-white">Configuration de l'espace entreprise</h1>
+            <div class="flex items-center gap-6">
+                <button class="relative text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#08090c]"></span>
+                </button>
+                <div class="w-px h-6 bg-white/10"></div>
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10"><span class="font-medium">TechBuild Industries</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-12">
+            
+            <section id="overview" class="space-y-6">
+                <div class="glass-panel p-4 rounded-xl border border-[#F5C518]/30 bg-[#F5C518]/5 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 bg-[#F5C518]/20 rounded-lg">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-[#F5C518]"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-[#F5C518] font-bold text-sm uppercase tracking-wider">Configuration incomplète</h4>
+                            <p class="text-sm text-gray-300 mt-1">3 étapes restantes avant d'activer l'agent <span class="nexus-brand" style="transform: scale(0.65); transform-origin: left center;"><img src="logo.png" alt="N" class="brand-logo"><span class="brand-suffix">exus</span></span> en mode production.</p>
+                        </div>
+                    </div>
+                    <div class="w-48">
+                        <div class="flex justify-between text-xs text-gray-400 mb-1">
+                            <span>Progression</span>
+                            <span>40%</span>
+                        </div>
+                        <div class="w-full h-2 bg-black/50 rounded-full overflow-hidden">
+                            <div class="h-full bg-[#F5C518] w-2/5 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-gray-400 text-sm font-medium">Responsables actifs</p>
+                            <i data-lucide="users" class="w-5 h-5 text-gray-500"></i>
+                        </div>
+                        <h3 class="text-4xl font-black text-[#F5C518]">3</h3>
+                        <p class="text-xs text-green-400 mt-2 flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +1 cette semaine</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-gray-400 text-sm font-medium">Clients importés</p>
+                            <i data-lucide="building-2" class="w-5 h-5 text-gray-500"></i>
+                        </div>
+                        <h3 class="text-4xl font-black text-[#F5C518]">4</h3>
+                        <p class="text-xs text-gray-500 mt-2">Nécessite configuration</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-gray-400 text-sm font-medium">Fournisseurs configurés</p>
+                            <i data-lucide="truck" class="w-5 h-5 text-gray-500"></i>
+                        </div>
+                        <h3 class="text-4xl font-black text-[#F5C518]">6</h3>
+                        <p class="text-xs text-green-400 mt-2 flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> Prêts pour l'IA</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-gray-400 text-sm font-medium">Produits enregistrés</p>
+                            <i data-lucide="box" class="w-5 h-5 text-gray-500"></i>
+                        </div>
+                        <h3 class="text-4xl font-black text-[#F5C518]">12</h3>
+                        <p class="text-xs text-red-400 mt-2 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> 2 en rupture</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="responsables">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span> Gestion des responsables
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 glass-panel rounded-2xl overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-black/20">
+                                    <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Nom & Email</th>
+                                    <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Rôle</th>
+                                    <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Statut</th>
+                                    <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row-alt">
+                                    <td class="p-4 border-b border-white/5">
+                                        <p class="text-sm font-bold text-white">Ahmed Bennani</p>
+                                        <p class="text-xs text-gray-500">a.bennani@techbuild.com</p>
+                                    </td>
+                                    <td class="p-4 border-b border-white/5 text-sm text-gray-300">Responsable Achats</td>
+                                    <td class="p-4 border-b border-white/5">
+                                        <span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">Actif</span>
+                                    </td>
+                                    <td class="p-4 border-b border-white/5 text-right">
+                                        <button class="text-gray-400 hover:text-white mx-1"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                        <button class="text-gray-400 hover:text-red-400 mx-1"><i data-lucide="power" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td class="p-4 border-b border-white/5">
+                                        <p class="text-sm font-bold text-white">Sara Idrissi</p>
+                                        <p class="text-xs text-gray-500">s.idrissi@techbuild.com</p>
+                                    </td>
+                                    <td class="p-4 border-b border-white/5 text-sm text-gray-300">Resp. Commercial</td>
+                                    <td class="p-4 border-b border-white/5">
+                                        <span class="badge-pending px-2.5 py-1 text-xs font-bold rounded-full">Invitation envoyée</span>
+                                    </td>
+                                    <td class="p-4 border-b border-white/5 text-right">
+                                        <button class="text-gray-400 hover:text-white mx-1"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                        <button class="text-gray-400 hover:text-red-400 mx-1"><i data-lucide="power" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td class="p-4 border-b border-white/5">
+                                        <p class="text-sm font-bold text-white">Youssef Tahiri</p>
+                                        <p class="text-xs text-gray-500">y.tahiri@techbuild.com</p>
+                                    </td>
+                                    <td class="p-4 border-b border-white/5 text-sm text-gray-300">Magasinier</td>
+                                    <td class="p-4 border-b border-white/5">
+                                        <span class="badge-disabled px-2.5 py-1 text-xs font-bold rounded-full">Désactivé</span>
+                                    </td>
+                                    <td class="p-4 border-b border-white/5 text-right">
+                                        <button class="text-gray-400 hover:text-white mx-1"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                        <button class="text-gray-400 hover:text-green-400 mx-1"><i data-lucide="power" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-lg font-bold mb-4">Ajouter un responsable</h3>
+                        <form class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1">Prénom</label>
+                                    <input type="text" class="input-dark w-full rounded-lg px-3 py-2 text-sm" placeholder="Ex: Karim">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1">Nom</label>
+                                    <input type="text" class="input-dark w-full rounded-lg px-3 py-2 text-sm" placeholder="Ex: Tazi">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Email professionnel</label>
+                                <input type="email" class="input-dark w-full rounded-lg px-3 py-2 text-sm" placeholder="k.tazi@techbuild.com">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Rôle</label>
+                                <select class="input-dark w-full rounded-lg px-3 py-2 text-sm appearance-none">
+                                    <option class="bg-[#0c0d12]">Responsable Achats</option>
+                                    <option class="bg-[#0c0d12]">Responsable Commercial</option>
+                                    <option class="bg-[#0c0d12]">Responsable Production</option>
+                                    <option class="bg-[#0c0d12]">Magasinier</option>
+                                    <option class="bg-[#0c0d12]">Directeur</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn-neon w-full py-2.5 rounded-lg font-bold text-sm mt-2">
+                                Générer l'invitation
+                            </button>
+                        </form>
+
+                        <div class="mt-6 pt-6 border-t border-white/5">
+                            <p class="text-xs text-gray-500 font-bold uppercase mb-3">Workflow d'activation</p>
+                            <div class="space-y-3 relative before:absolute before:inset-0 before:ml-[9px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-white/10 before:to-transparent">
+                                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                    <div class="flex items-center justify-center w-5 h-5 rounded-full border border-[#F5C518] bg-[#0c0d12] text-[#F5C518] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                                        <i data-lucide="user-check" class="w-3 h-3"></i>
+                                    </div>
+                                    <div class="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] text-xs text-gray-400 ml-2">Compte créé (Désactivé)</div>
+                                </div>
+                                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                    <div class="flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 bg-[#0c0d12] text-gray-500 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                                        <i data-lucide="mail" class="w-3 h-3"></i>
+                                    </div>
+                                    <div class="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] text-xs text-gray-400 ml-2">Email envoyé</div>
+                                </div>
+                                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                    <div class="flex items-center justify-center w-5 h-5 rounded-full border border-gray-600 bg-[#0c0d12] text-gray-500 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                                        <i data-lucide="key" class="w-3 h-3"></i>
+                                    </div>
+                                    <div class="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] text-xs text-gray-400 ml-2">Activation via OTP</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="clients">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span> Import & Gestion des clients
+                    </h2>
+                </div>
+                <p class="text-gray-400 text-sm mb-6">À l'import, chaque client reçoit automatiquement un email d'invitation pour activer son compte sur le portail client de votre entreprise.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="glass-panel p-6 rounded-2xl border-dashed border-2 border-white/10 hover:border-[#F5C518]/50 transition-colors cursor-pointer flex flex-col items-center justify-center text-center h-48">
+                        <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3 text-gray-400">
+                            <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="font-bold text-white mb-1">Import de masse (CSV/Excel)</h4>
+                        <p class="text-xs text-gray-500">Glissez-déposez votre fichier ici<br>Colonnes attendues : Nom, Email, Téléphone, Segment.</p>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl h-48 flex flex-col justify-center">
+                        <h4 class="font-bold text-white mb-4">Ajout manuel</h4>
+                        <div class="flex gap-2">
+                            <input type="text" class="input-dark w-1/3 rounded-lg px-3 py-2 text-xs" placeholder="Nom entreprise">
+                            <input type="email" class="input-dark w-1/3 rounded-lg px-3 py-2 text-xs" placeholder="Email">
+                            <select class="input-dark w-1/3 rounded-lg px-3 py-2 text-xs appearance-none">
+                                <option class="bg-[#0c0d12]">EduTech</option>
+                                <option class="bg-[#0c0d12]">CyberArena</option>
+                                <option class="bg-[#0c0d12]">CorpIT</option>
+                                <option class="bg-[#0c0d12]">DataCenter</option>
+                                <option class="bg-[#0c0d12]">Particulier</option>
+                            </select>
+                        </div>
+                        <button class="btn-ghost w-full py-2 rounded-lg text-xs font-bold mt-4">Enregistrer le client</button>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-black/20">
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Entreprise & Email</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Segment</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Statut</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-row-alt">
+                                <td class="p-4 border-b border-white/5">
+                                    <p class="text-sm font-bold text-white">EduTech Maroc</p>
+                                    <p class="text-xs text-gray-500">achats@edutech.ma</p>
+                                </td>
+                                <td class="p-4 border-b border-white/5 text-sm text-gray-300">EduTech</td>
+                                <td class="p-4 border-b border-white/5"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">Actif</span></td>
+                                <td class="p-4 border-b border-white/5 text-right"><button class="text-gray-400 hover:text-white"><i data-lucide="more-vertical" class="w-4 h-4"></i></button></td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td class="p-4 border-b border-white/5">
+                                    <p class="text-sm font-bold text-white">CyberArena</p>
+                                    <p class="text-xs text-gray-500">supply@cyberarena.com</p>
+                                </td>
+                                <td class="p-4 border-b border-white/5 text-sm text-gray-300">CyberArena</td>
+                                <td class="p-4 border-b border-white/5"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">Actif</span></td>
+                                <td class="p-4 border-b border-white/5 text-right"><button class="text-gray-400 hover:text-white"><i data-lucide="more-vertical" class="w-4 h-4"></i></button></td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td class="p-4 border-b border-white/5">
+                                    <p class="text-sm font-bold text-white">CorpIT Solutions</p>
+                                    <p class="text-xs text-gray-500">contact@corpit.net</p>
+                                </td>
+                                <td class="p-4 border-b border-white/5 text-sm text-gray-300">CorpIT</td>
+                                <td class="p-4 border-b border-white/5"><span class="badge-pending px-2.5 py-1 text-xs font-bold rounded-full">Invitation envoyée</span></td>
+                                <td class="p-4 border-b border-white/5 text-right"><button class="text-gray-400 hover:text-white"><i data-lucide="more-vertical" class="w-4 h-4"></i></button></td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td class="p-4 border-b border-white/5">
+                                    <p class="text-sm font-bold text-white">DataCenter MA</p>
+                                    <p class="text-xs text-gray-500">infra@datacenter.ma</p>
+                                </td>
+                                <td class="p-4 border-b border-white/5 text-sm text-gray-300">DataCenter</td>
+                                <td class="p-4 border-b border-white/5"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">Actif</span></td>
+                                <td class="p-4 border-b border-white/5 text-right"><button class="text-gray-400 hover:text-white"><i data-lucide="more-vertical" class="w-4 h-4"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="config">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span> Modèles opérationnels & IA
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <div class="glass-panel rounded-2xl flex flex-col">
+                        <div class="p-5 border-b border-white/5 flex justify-between items-center">
+                            <h3 class="font-bold flex items-center gap-2"><i data-lucide="truck" class="w-4 h-4 text-[#F5C518]"></i> Fournisseurs (6)</h3>
+                            <button class="text-[#F5C518] text-xs font-bold hover:underline">Ajouter</button>
+                        </div>
+                        <div class="p-0 overflow-x-auto flex-1">
+                            <table class="w-full text-left text-sm">
+                                <tbody>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">IntelDistrib</td><td class="p-4 text-gray-400">Taiwan</td><td class="p-4 text-gray-400">21j</td><td class="p-4 text-green-400">92/100</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">AMDSupply</td><td class="p-4 text-gray-400">Chine</td><td class="p-4 text-gray-400">18j</td><td class="p-4 text-green-400">89/100</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">KingstonPro</td><td class="p-4 text-gray-400">Hong Kong</td><td class="p-4 text-gray-400">14j</td><td class="p-4 text-yellow-400">81/100</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">SamsungSSD</td><td class="p-4 text-gray-400">Corée</td><td class="p-4 text-gray-400">16j</td><td class="p-4 text-green-400">95/100</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">NvidiaPartner</td><td class="p-4 text-gray-400">Singapour</td><td class="p-4 text-gray-400">25j</td><td class="p-4 text-red-400">68/100</td>
+                                    </tr>
+                                    <tr class="hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">LocalElec</td><td class="p-4 text-gray-400">Maroc</td><td class="p-4 text-gray-400">3j</td><td class="p-4 text-green-400">85/100</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl flex flex-col">
+                        <div class="p-5 border-b border-white/5 flex justify-between items-center">
+                            <h3 class="font-bold flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4 text-[#F5C518]"></i> Transporteurs (5)</h3>
+                            <button class="text-[#F5C518] text-xs font-bold hover:underline">Ajouter</button>
+                        </div>
+                        <div class="p-0 overflow-x-auto flex-1">
+                            <table class="w-full text-left text-sm">
+                                <tbody>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">DHL Express</td><td class="p-4 text-gray-400">Global</td><td class="p-4 text-gray-400">1j</td><td class="p-4 text-green-400">98%</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">Aramex</td><td class="p-4 text-gray-400">MENA</td><td class="p-4 text-gray-400">2j</td><td class="p-4 text-green-400">95%</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">FedEx</td><td class="p-4 text-gray-400">Global</td><td class="p-4 text-gray-400">1j</td><td class="p-4 text-green-400">97%</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">CTM Messagerie</td><td class="p-4 text-gray-400">National</td><td class="p-4 text-gray-400">3j</td><td class="p-4 text-yellow-400">88%</td>
+                                    </tr>
+                                    <tr class="hover:bg-white/[0.02]">
+                                        <td class="p-4 font-medium">Amana Express</td><td class="p-4 text-gray-400">National</td><td class="p-4 text-gray-400">2j</td><td class="p-4 text-green-400">91%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl flex flex-col">
+                        <div class="p-5 border-b border-white/5 flex justify-between items-center">
+                            <h3 class="font-bold flex items-center gap-2"><i data-lucide="box" class="w-4 h-4 text-[#F5C518]"></i> Catalogue (12)</h3>
+                            <button class="text-[#F5C518] text-xs font-bold hover:underline">Gérer</button>
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col justify-center">
+                            <p class="text-sm text-gray-400 mb-4">12 nomenclatures produits enregistrées. Le modèle XGBoost surveille actuellement 86 composants associés.</p>
+                            <button class="btn-ghost w-full py-2.5 rounded-lg text-sm font-bold">Importer catalogue (CSV)</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl flex flex-col">
+                        <div class="p-5 border-b border-white/5">
+                            <h3 class="font-bold flex items-center gap-2"><i data-lucide="pie-chart" class="w-4 h-4 text-[#F5C518]"></i> Règles Décisionnelles IA</h3>
+                        </div>
+                        <div class="p-5 flex-1">
+                            <form class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold text-gray-500 mb-1">Budget mensuel achats</label>
+                                    <div class="relative">
+                                        <input type="number" class="input-dark w-full rounded-lg pl-3 pr-10 py-2 text-sm font-medium" value="100000">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">MAD</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold text-gray-500 mb-1">Seuil d'alerte rupture</label>
+                                    <div class="relative">
+                                        <input type="number" class="input-dark w-full rounded-lg pl-3 pr-10 py-2 text-sm font-medium" value="7">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">Jours</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold text-gray-500 mb-1">Retour auto-approuvé max</label>
+                                    <div class="relative">
+                                        <input type="number" class="input-dark w-full rounded-lg pl-3 pr-10 py-2 text-sm font-medium" value="5000">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">MAD</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold text-gray-500 mb-1">Seuil Blacklist Fournisseur</label>
+                                    <div class="relative">
+                                        <input type="number" class="input-dark w-full rounded-lg pl-3 pr-8 py-2 text-sm font-medium" value="75">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">%</span>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="mt-4 flex justify-end">
+                                <button class="bg-white/5 hover:bg-white/10 text-white text-xs font-bold py-2 px-4 rounded transition-colors">Sauvegarder les règles</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            
+            <div class="h-12"></div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

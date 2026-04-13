@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des retours clients - NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #F5C518;
+            border: 1px solid rgba(245, 197, 24, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover {
+            background: rgba(245, 197, 24, 0.1);
+            border-color: #F5C518;
+        }
+
+        .btn-ghost-red {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost-red:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        /* Tables & Row Colors */
+        .table-row-alt:nth-child(even):not(.row-supplier):not(.row-internal):not(.row-cancel) { background-color: rgba(255, 255, 255, 0.02); }
+        
+        .row-supplier { background-color: rgba(239, 68, 68, 0.03); }
+        .row-internal { background-color: rgba(249, 115, 22, 0.03); }
+        .row-cancel { background-color: rgba(59, 130, 246, 0.03); }
+
+        /* Badges */
+        .badge-supplier { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .badge-internal { background-color: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .badge-cancel { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .badge-transport { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .badge-warning { background-color: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+
+        /* Resolution Cards Selectable */
+        .res-card {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .res-card.active {
+            border-color: #F5C518;
+            background-color: rgba(245, 197, 24, 0.05);
+        }
+
+        /* Custom Radio */
+        .custom-radio {
+            appearance: none;
+            width: 1.25em; height: 1.25em;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: grid; place-content: center;
+            background: transparent;
+            cursor: pointer;
+            pointer-events: none; /* Managed by JS on parent */
+        }
+        .custom-radio::before {
+            content: "";
+            width: 0.65em; height: 0.65em;
+            border-radius: 50%;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            background-color: #08090c;
+        }
+        .res-card.active .custom-radio {
+            background-color: #F5C518;
+            border-color: #F5C518;
+        }
+        .res-card.active .custom-radio::before {
+            transform: scale(1);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tableau de bord
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="building-2" class="w-5 h-5"></i> Clients
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i> Commandes clients
+                </a>
+                <a href="selection-transporteur.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Sélection transporteur
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5 text-[#F5C518]"></i> Retours
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Analytics
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Sara Idrissi</p>
+                        <p class="text-xs text-gray-500">Resp. Commercial</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <h1 class="text-xl font-bold text-white">Gestion des retours clients</h1>
+            
+            <div class="flex items-center gap-6">
+                <button class="relative text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#08090c]"></span>
+                </button>
+                <div class="w-px h-6 bg-white/10"></div>
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-10">
+            
+            <section>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Retours ce mois</p>
+                        <h3 class="text-3xl font-black text-white">7</h3>
+                        <p class="text-xs text-orange-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +2 cette semaine</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">En attente de décision</p>
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-3xl font-black text-orange-400">3</h3>
+                            <span class="badge-warning px-2 py-0.5 text-[10px] font-bold rounded uppercase">Action requise</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Taux de retour global</p>
+                        <h3 class="text-3xl font-black text-white">3.2%</h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-down" class="w-3 h-3"></i> -0.5% ce mois</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Coût total retours ce mois</p>
+                        <h3 class="text-3xl font-black text-white">12 400 <span class="text-lg text-gray-500">MAD</span></h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-down" class="w-3 h-3"></i> -8% ce mois</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="rounded-xl border border-red-500/20 bg-red-500/5 p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 bg-red-500/20 rounded-lg shrink-0">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <h4 class="text-red-400 font-bold text-sm">Défaut série détecté — GPU NVIDIA RTX 4090</h4>
+                                <span class="badge-supplier px-2 py-0.5 text-[10px] font-bold rounded uppercase">Défaut série</span>
+                            </div>
+                            <p class="text-xs text-gray-400">3 retours pour le même motif ce mois — Fournisseur NvidiaPartner pénalisé automatiquement — Score 68/100.</p>
+                        </div>
+                    </div>
+                    <button class="btn-ghost-red px-4 py-2 rounded-lg text-xs font-bold shrink-0 flex items-center gap-2">
+                        Voir les retours concernés <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Retours en attente de décision</h2>
+                </div>
+
+                <div class="glass-panel rounded-2xl overflow-hidden border border-white/5 overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[1100px]">
+                        <thead>
+                            <tr class="bg-black/40">
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider">Référence retour</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider">Client</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider">Produit</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider">Motif déclaré</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-center">Analyse IA</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-right">Montant</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-center">Décision suggérée</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="row-supplier border-b border-red-500/10">
+                                <td class="p-4 font-mono font-bold text-white">RET-2026-0018</td>
+                                <td class="p-4 text-gray-300 font-medium">CyberArena</td>
+                                <td class="p-4 text-gray-300">PC Gaming Premium</td>
+                                <td class="p-4 text-gray-300">Défaut GPU</td>
+                                <td class="p-4 text-center"><span class="badge-supplier px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Responsabilité fournisseur</span></td>
+                                <td class="p-4 text-right font-bold text-white">4 200 MAD</td>
+                                <td class="p-4 text-center text-gray-300">Remplacement suggéré</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="text-green-400 hover:text-green-300 mx-1" title="Approuver"><i data-lucide="check-circle" class="w-5 h-5"></i></button>
+                                    <button class="text-red-400 hover:text-red-300 mx-1" title="Refuser"><i data-lucide="x-circle" class="w-5 h-5"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="row-internal border-b border-orange-500/10">
+                                <td class="p-4 font-mono font-bold text-white">RET-2026-0017</td>
+                                <td class="p-4 text-gray-300 font-medium">CorpIT Solutions</td>
+                                <td class="p-4 text-gray-300">PC Bureau Entreprise</td>
+                                <td class="p-4 text-gray-300">Mauvais produit livré</td>
+                                <td class="p-4 text-center"><span class="badge-internal px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Erreur interne</span></td>
+                                <td class="p-4 text-right font-bold text-white">1 800 MAD</td>
+                                <td class="p-4 text-center text-gray-300">Remplacement immédiat suggéré</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="text-green-400 hover:text-green-300 mx-1"><i data-lucide="check-circle" class="w-5 h-5"></i></button>
+                                    <button class="text-red-400 hover:text-red-300 mx-1"><i data-lucide="x-circle" class="w-5 h-5"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="row-cancel border-b border-blue-500/10">
+                                <td class="p-4 font-mono font-bold text-white">RET-2026-0016</td>
+                                <td class="p-4 text-gray-300 font-medium">EduTech Maroc</td>
+                                <td class="p-4 text-gray-300">PC Workstation</td>
+                                <td class="p-4 text-gray-300">Annulation commande</td>
+                                <td class="p-4 text-center"><span class="badge-cancel px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Annulation</span></td>
+                                <td class="p-4 text-right font-bold text-white">8 500 MAD</td>
+                                <td class="p-4 text-center text-gray-300">Remboursement suggéré</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="text-green-400 hover:text-green-300 mx-1"><i data-lucide="check-circle" class="w-5 h-5"></i></button>
+                                    <button class="text-red-400 hover:text-red-300 mx-1"><i data-lucide="x-circle" class="w-5 h-5"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="resolution-section">
+                <div class="glass-panel rounded-2xl border-2 border-red-500/20 overflow-hidden shadow-[0_0_30px_rgba(239,68,68,0.05)]">
+                    
+                    <div class="p-5 border-b border-red-500/20 bg-red-500/5 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <h3 class="text-2xl font-black text-white font-mono">RET-2026-0018</h3>
+                            <span class="badge-supplier px-2.5 py-1 text-[10px] font-bold rounded uppercase tracking-wider">Urgent</span>
+                        </div>
+                        <span class="badge-warning px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4"></i> En attente de décision
+                        </span>
+                    </div>
+
+                    <div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10 bg-[#0c0d12]/40">
+                        
+                        <div class="space-y-4">
+                            <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Informations retour</h4>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-5 space-y-3 text-sm">
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="text-gray-400">Client</span>
+                                    <span class="font-bold text-white">CyberArena</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="text-gray-400">Commande origine</span>
+                                    <span class="font-mono text-gray-300">CMD-2026-0089</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="text-gray-400">Produit</span>
+                                    <span class="font-medium text-white">PC Gaming Premium</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="text-gray-400">Quantité retournée</span>
+                                    <span class="font-bold text-white">1 unité</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="text-gray-400">Date initiation retour</span>
+                                    <span class="font-medium text-white">13 Avril 2026</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="text-gray-400">Motif déclaré par le client</span>
+                                    <span class="font-medium text-red-400">Produit défectueux GPU ne fonctionne pas</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Valeur produit</span>
+                                    <span class="font-bold text-white">4 200 MAD</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Analyse de l'agent NEXUS</h4>
+                            <div class="bg-[#F5C518]/5 border border-[#F5C518]/30 rounded-xl p-5 h-full flex flex-col">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="p-2 bg-[#F5C518]/20 rounded-lg">
+                                        <i data-lucide="cpu" class="w-5 h-5 text-[#F5C518]"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-[#F5C518] uppercase tracking-wider">Mistral AI Analysis</span>
+                                </div>
+                                <p class="text-sm text-gray-300 leading-relaxed mb-4 flex-1">
+                                    L'agent a analysé le motif déclaré et identifié la responsabilité.<br><br>
+                                    <span class="text-gray-400">Motif :</span> Défaut matériel GPU NVIDIA RTX 4090.<br>
+                                    <span class="text-gray-400">Responsabilité :</span> Fournisseur NvidiaPartner.<br>
+                                    <span class="text-gray-400">Décision suggérée :</span> Remplacement produit.<br><br>
+                                    <span class="text-gray-400">Justification :</span> CyberArena est un client VIP avec 12 commandes historiques. Le montant de 4 200 MAD est inférieur au seuil d'auto-approbation de 5 000 MAD. Ce retour est éligible à une approbation automatique mais a été escaladé car lié au défaut série détecté.
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-auto pt-4 border-t border-[#F5C518]/20">
+                                    <span class="px-2.5 py-1 rounded bg-green-500/20 border border-green-500/30 text-green-400 text-[10px] font-bold uppercase flex items-center gap-1"><i data-lucide="star" class="w-3 h-3"></i> Client VIP</span>
+                                    <span class="px-2.5 py-1 rounded bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[10px] font-bold uppercase flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Escaladé défaut série</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Sélection transporteur retour</h4>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl overflow-hidden">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-black/30">
+                                            <th class="p-3 border-b border-white/5 text-gray-500 font-semibold uppercase">Transporteur</th>
+                                            <th class="p-3 border-b border-white/5 text-gray-500 font-semibold uppercase text-center">Délai</th>
+                                            <th class="p-3 border-b border-white/5 text-gray-500 font-semibold uppercase text-right">Prix</th>
+                                            <th class="p-3 border-b border-white/5 text-gray-500 font-semibold uppercase text-center">Recommandé</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="bg-[#F5C518]/5 border-b border-[#F5C518]/20">
+                                            <td class="p-3 font-bold text-white">Aramex</td>
+                                            <td class="p-3 text-center text-gray-300">1j</td>
+                                            <td class="p-3 text-right font-medium text-white">280 MAD</td>
+                                            <td class="p-3 text-center"><i data-lucide="check-circle" class="w-4 h-4 text-[#F5C518] mx-auto"></i></td>
+                                        </tr>
+                                        <tr class="border-b border-white/5">
+                                            <td class="p-3 font-bold text-gray-300">DHL Express</td>
+                                            <td class="p-3 text-center text-gray-400">1j</td>
+                                            <td class="p-3 text-right font-medium text-gray-400">380 MAD</td>
+                                            <td class="p-3"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3 font-bold text-gray-300">Amana Express</td>
+                                            <td class="p-3 text-center text-gray-400">2j</td>
+                                            <td class="p-3 text-right font-medium text-gray-400">180 MAD</td>
+                                            <td class="p-3"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-[11px] text-gray-500 mt-2 flex items-start gap-1.5">
+                                <i data-lucide="info" class="w-3.5 h-3.5 shrink-0 mt-0.5"></i> L'agent recommande Aramex pour le ramassage car il offre le meilleur rapport qualité-prix pour les retours nationaux.
+                            </p>
+                        </div>
+
+                        <div class="space-y-4 flex flex-col h-full">
+                            <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Résolution</h4>
+                            <div class="space-y-3 flex-1">
+                                
+                                <div class="res-card active p-4 rounded-xl flex items-center gap-4 group">
+                                    <div class="p-2.5 bg-green-500/10 border border-green-500/20 rounded-lg shrink-0">
+                                        <i data-lucide="refresh-cw" class="w-5 h-5 text-green-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h5 class="text-sm font-bold text-white mb-0.5 group-[.active]:text-[#F5C518] transition-colors">Remplacement</h5>
+                                        <p class="text-xs text-gray-400">Envoyer un nouveau PC Gaming Premium — Prélèvement sur stock existant — 3 unités disponibles</p>
+                                    </div>
+                                    <div class="shrink-0 pl-2">
+                                        <input type="radio" name="resolution" class="custom-radio" checked>
+                                    </div>
+                                </div>
+
+                                <div class="res-card p-4 rounded-xl flex items-center gap-4 group">
+                                    <div class="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-lg shrink-0">
+                                        <i data-lucide="credit-card" class="w-5 h-5 text-blue-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h5 class="text-sm font-bold text-white mb-0.5 group-[.active]:text-[#F5C518] transition-colors">Remboursement</h5>
+                                        <p class="text-xs text-gray-400">Générer une note de crédit de 4 200 MAD — Remboursement sous 5 jours ouvrés</p>
+                                    </div>
+                                    <div class="shrink-0 pl-2">
+                                        <input type="radio" name="resolution" class="custom-radio">
+                                    </div>
+                                </div>
+
+                                <div class="res-card p-4 rounded-xl flex items-center gap-4 group">
+                                    <div class="p-2.5 bg-orange-500/10 border border-orange-500/20 rounded-lg shrink-0">
+                                        <i data-lucide="tool" class="w-5 h-5 text-orange-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h5 class="text-sm font-bold text-white mb-0.5 group-[.active]:text-[#F5C518] transition-colors">Réparation</h5>
+                                        <p class="text-xs text-gray-400">Créer un ticket production pour remplacement GPU — Délai estimé 5 jours</p>
+                                    </div>
+                                    <div class="shrink-0 pl-2">
+                                        <input type="radio" name="resolution" class="custom-radio">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <div id="action-bar-resolution" class="border-t border-red-500/20 bg-[#0c0d12]/80 p-5 md:px-8 flex flex-col md:flex-row items-center justify-end gap-4 relative z-10 transition-all duration-300">
+                        <button class="btn-ghost-red px-6 py-3 rounded-xl font-bold text-sm w-full md:w-auto">
+                            Refuser le retour
+                        </button>
+                        <button id="btn-approve" class="btn-neon px-8 py-3 rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2 w-full md:w-auto">
+                            Approuver et déclencher la résolution <i data-lucide="check" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Retours clôturés ce mois</h2>
+                </div>
+
+                <div class="glass-panel rounded-2xl overflow-hidden border border-white/5 overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[900px]">
+                        <thead>
+                            <tr class="bg-black/30">
+                                <th class="p-3 border-b border-white/5 text-xs text-gray-500 font-semibold uppercase">Référence</th>
+                                <th class="p-3 border-b border-white/5 text-xs text-gray-500 font-semibold uppercase">Client</th>
+                                <th class="p-3 border-b border-white/5 text-xs text-gray-500 font-semibold uppercase">Produit</th>
+                                <th class="p-3 border-b border-white/5 text-xs text-gray-500 font-semibold uppercase">Motif</th>
+                                <th class="p-3 border-b border-white/5 text-xs text-gray-500 font-semibold uppercase">Résolution</th>
+                                <th class="p-3 border-b border-white/5 text-xs text-gray-500 font-semibold uppercase text-right">Montant</th>
+                                <th class="p-3 border-b border-white/5 text-xs text-gray-500 font-semibold uppercase text-right">Date clôture</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="table-row-alt border-b border-white/5">
+                                <td class="p-3 font-mono text-gray-400 text-xs">RET-2026-0015</td>
+                                <td class="p-3 font-medium text-white">DataCenter MA</td>
+                                <td class="p-3 text-gray-300">Serveur Entry Level</td>
+                                <td class="p-3 text-gray-400">Défaut disque dur</td>
+                                <td class="p-3 text-gray-300">Remplacement</td>
+                                <td class="p-3 text-right font-medium text-white">6 800 MAD</td>
+                                <td class="p-3 text-right text-gray-500">10 Avril 2026</td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5">
+                                <td class="p-3 font-mono text-gray-400 text-xs">RET-2026-0014</td>
+                                <td class="p-3 font-medium text-white">CyberArena</td>
+                                <td class="p-3 text-gray-300">PC Gaming Standard</td>
+                                <td class="p-3 text-gray-400">Défaut GPU</td>
+                                <td class="p-3 text-gray-300">Remplacement</td>
+                                <td class="p-3 text-right font-medium text-white">2 900 MAD</td>
+                                <td class="p-3 text-right text-gray-500">08 Avril 2026</td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5">
+                                <td class="p-3 font-mono text-gray-400 text-xs">RET-2026-0013</td>
+                                <td class="p-3 font-medium text-white">EduTech Maroc</td>
+                                <td class="p-3 text-gray-300">PC Bureau Entreprise</td>
+                                <td class="p-3 text-gray-400">Annulation</td>
+                                <td class="p-3 text-gray-300">Remboursement</td>
+                                <td class="p-3 text-right font-medium text-white">1 800 MAD</td>
+                                <td class="p-3 text-right text-gray-500">05 Avril 2026</td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5">
+                                <td class="p-3 font-mono text-gray-400 text-xs">RET-2026-0012</td>
+                                <td class="p-3 font-medium text-white">CorpIT Solutions</td>
+                                <td class="p-3 text-gray-300">PC Gaming Premium</td>
+                                <td class="p-3 text-gray-400">Produit endommagé transport</td>
+                                <td class="p-3 text-gray-300">Remboursement</td>
+                                <td class="p-3 text-right font-medium text-white">4 200 MAD</td>
+                                <td class="p-3 text-right text-gray-500">02 Avril 2026</td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td class="p-3 font-mono text-gray-400 text-xs">RET-2026-0011</td>
+                                <td class="p-3 font-medium text-white">CyberArena</td>
+                                <td class="p-3 text-gray-300">PC Workstation</td>
+                                <td class="p-3 text-gray-400">Défaut GPU</td>
+                                <td class="p-3 text-gray-300">Remplacement</td>
+                                <td class="p-3 text-right font-medium text-white">5 100 MAD</td>
+                                <td class="p-3 text-right text-gray-500">28 Mars 2026</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="h-12"></div>
+        </div>
+    </main>
+
+    <script>
+        // 1. Initialisation des icônes
+        lucide.createIcons();
+
+        // 2. Logique de sélection des Cards de Résolution
+        const resCards = document.querySelectorAll('.res-card');
+        
+        resCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Enlever la classe active de toutes les cartes
+                resCards.forEach(c => {
+                    c.classList.remove('active');
+                    c.querySelector('.custom-radio').checked = false;
+                });
+                
+                // Ajouter la classe active sur la carte cliquée
+                card.classList.add('active');
+                card.querySelector('.custom-radio').checked = true;
+            });
+        });
+
+        // 3. Logique du bouton d'approbation (Écran de succès)
+        const btnApprove = document.getElementById('btn-approve');
+        const actionBar = document.getElementById('action-bar-resolution');
+
+        btnApprove.addEventListener('click', () => {
+            // Remplacement du contenu de la barre d'action par le message de succès
+            actionBar.innerHTML = `
+                <div class="w-full flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in py-2">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center shrink-0">
+                            <i data-lucide="check" class="w-6 h-6 text-green-500"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold text-lg mb-1">Retour RET-2026-0018 approuvé</h4>
+                            <p class="text-sm text-gray-400 flex items-center gap-1.5 mb-0.5"><i data-lucide="mail" class="w-3.5 h-3.5"></i> Email de confirmation envoyé à CyberArena</p>
+                            <p class="text-sm text-gray-400 flex items-center gap-1.5"><i data-lucide="truck" class="w-3.5 h-3.5"></i> Aramex sélectionné pour le ramassage — Email envoyé</p>
+                        </div>
+                    </div>
+                    <div class="shrink-0 flex flex-col items-end gap-2 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6 w-full md:w-auto">
+                        <p class="text-sm font-bold text-red-400">Score NvidiaPartner pénalisé — Nouveau score 63/100</p>
+                        <span class="badge-supplier px-2.5 py-1 text-[10px] font-bold rounded uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="alert-triangle" class="w-3 h-3"></i> Alerte — Score sous le seuil de blacklist (65/100)
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            // Re-générer les icônes pour le nouveau contenu injecté
+            lucide.createIcons();
+            
+            // Changer le style de fond de la barre
+            actionBar.classList.remove('border-red-500/20', 'bg-[#0c0d12]/80');
+            actionBar.classList.add('border-green-500/30', 'bg-[#0c0d12]/95');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent NEXUS - Assistant Production</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+            overflow: hidden;
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost-sm {
+            background: transparent;
+            color: #9ca3af;
+            border: 1px solid rgba(156, 163, 175, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost-sm:hover {
+            background: rgba(156, 163, 175, 0.1);
+            border-color: #9ca3af;
+            color: white;
+        }
+
+        /* Inputs */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        .nexus-brand-sm { display: inline-flex; align-items: center; }
+        .brand-logo-sm { height: 14px; vertical-align: middle; }
+        .brand-suffix-sm { font-weight: 700; color: #FFFFFF; font-size: 12px; letter-spacing: -0.02em; margin-left: 1px; }
+
+        /* Chat Bubbles */
+        .msg-user {
+            background-color: #F5C518;
+            color: #08090c;
+            border-radius: 16px 16px 4px 16px;
+            padding: 12px 16px;
+            max-width: 70%;
+            align-self: flex-end;
+            font-weight: 500;
+        }
+        .msg-agent {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #d1d5db; /* gray-300 */
+            border-radius: 16px 16px 16px 4px;
+            padding: 14px 18px;
+            max-width: 75%;
+            align-self: flex-start;
+            line-height: 1.6;
+        }
+
+        /* Suggestions Cards */
+        .suggestion-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(245, 197, 24, 0.2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .suggestion-card:hover {
+            background: rgba(245, 197, 24, 0.05);
+            border-color: #F5C518;
+            color: #ffffff;
+        }
+
+        /* Typing Indicator Animation */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 4px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #F5C518;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-msg { animation: fadeInMsg 0.3s ease-out forwards; }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="dashboard-production.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tableau de bord
+                </a>
+                <a href="dashboard-production.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="cpu" class="w-5 h-5"></i> Ordres de production
+                </a>
+                <a href="dashboard-stock.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="package" class="w-5 h-5"></i> Stock composants
+                </a>
+                <a href="dashboard-production.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="tool" class="w-5 h-5"></i> Réparations retours
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium mt-4">
+                    <i data-lucide="cpu" class="w-5 h-5 text-[#F5C518]"></i> Agent IA
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Responsable Production</p>
+                        <p class="text-xs text-gray-500">TechBuild</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <div class="flex items-center gap-4">
+                <h1 class="text-xl font-bold text-white">Agent NEXUS — Assistant Production</h1>
+                <div class="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span class="text-xs font-bold text-green-400 uppercase tracking-wider">Agent actif</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 flex overflow-hidden">
+            
+            <div class="w-full lg:w-[70%] flex flex-col border-r border-white/5 relative">
+                
+                <div class="p-6 shrink-0 z-10 bg-gradient-to-b from-[#08090c] to-transparent">
+                    <div class="glass-panel p-4 rounded-xl border border-white/10 flex items-start gap-4">
+                        <div class="p-2 bg-[#F5C518]/10 rounded-lg shrink-0 border border-[#F5C518]/20">
+                            <i data-lucide="cpu" class="w-5 h-5 text-[#F5C518]"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white mb-1">Contexte agent actif</h3>
+                            <p class="text-xs text-gray-400 leading-relaxed">
+                                L'agent a accès aux données production de TechBuild Industries : 3 ordres de production en cours, 18 ordres terminés ce mois, 187 unités assemblées ce mois, 2 réparations retours en attente. Rôle connecté : Responsable Production — accès limité aux données production, stock composants et réparations.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-container" class="flex-1 overflow-y-auto px-6 pb-24 flex flex-col gap-6" style="height: calc(100vh - 320px);">
+                    
+                    <div class="msg-user">
+                        Quels sont les ordres de production en cours ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        3 ordres de production sont actuellement en cours. OP-2848 priorité urgente 17 PC Gaming Premium pour CyberArena CMD-2026-0090 — bloqué en attente GPU RTX 4090 et Processeur i9 insuffisants. Production partielle possible avec 3 unités disponibles. OP-2847 priorité normale 15 PC Bureau Entreprise pour EduTech CMD-2026-0088 — tous composants disponibles progression 60% soit 9 unités terminées sur 15. OP-2846 priorité faible 8 PC Gaming Standard pour CorpIT CMD-2026-0085 — tous composants disponibles progression 25% soit 2 unités terminées sur 8.
+                    </div>
+
+                    <div class="msg-user">
+                        OP-2848 est bloqué pourquoi ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        OP-2848 est bloqué pour 2 raisons. Premièrement GPU RTX 4090 : stock disponible 3 unités, quantité nécessaire 17 unités, déficit 14 unités. Commande en cours BC-2026-0312 chez AMDSupply livraison estimée 28 Avril. Deuxièmement Processeur Intel i9 : stock disponible 8 unités, quantité nécessaire 17 unités, déficit 9 unités. Commande en cours BC-2026-0319 chez IntelDistrib livraison estimée 22 Avril. Option disponible : démarrer une production partielle de 3 PC Gaming Premium avec les GPU disponibles en attendant les livraisons.
+                    </div>
+
+                    <div class="msg-user">
+                        Combien de temps pour assembler 20 PC Gaming Premium ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Sur la base de l'historique de production TechBuild, l'assemblage de 20 PC Gaming Premium prend en moyenne 2 jours ouvrés. Référence : OP-2845 20 PC Gaming Premium assemblés en 2 jours du 10 au 12 Avril. Durée par unité environ 45 minutes. Avec 2 techniciens en parallèle possible de réduire à 1.5 jours. La commande CyberArena CMD-2026-0090 a un délai urgent — je recommande de démarrer dès réception des composants manquants le 22 Avril pour livrer le 24 Avril.
+                    </div>
+
+                    <div class="msg-user">
+                        Quelles réparations retours sont en attente ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        2 réparations retours sont en attente. RET-2026-0018 CyberArena PC Gaming Premium remplacement GPU RTX 4090 défectueux — en attente de la pièce de remplacement stock actuel 3 unités dont 2 réservées pour production. RET-2026-0015 DataCenter MA Serveur Entry Level remplacement disque dur HDD 10TB défectueux — en cours de réparation délai estimé 2 jours. Je recommande de traiter RET-2026-0015 en priorité car le disque de remplacement est disponible en stock.
+                    </div>
+
+                    <div class="msg-user">
+                        Quel est le rendement de production ce mois ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Rendement production avril 2026. 18 ordres terminés pour 187 unités assemblées. Durée moyenne par ordre 1.8 jours. Durée moyenne par unité 42 minutes en amélioration par rapport à mars 47 minutes. Répartition par produit : PC Gaming Standard 45 unités, PC Gaming Premium 62 unités, PC Bureau Entreprise 50 unités, PC Workstation 20 unités, Serveur Entry Level 10 unités. Aucun ordre annulé ce mois. 1 ordre retardé OP-2848 à cause de composants manquants. Rendement global en hausse de 12% par rapport à mars.
+                    </div>
+
+                    </div>
+
+                <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0c0d12] via-[#0c0d12]/90 to-transparent p-6 pt-10">
+                    <div class="relative max-w-4xl mx-auto flex items-center">
+                        <input type="text" id="chat-input" placeholder="Posez votre question à l'agent NEXUS..." class="w-full bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-2xl pl-6 pr-16 py-4 text-sm text-white focus:border-[#F5C518] focus:bg-white/[0.05] focus:outline-none transition-all shadow-lg" autocomplete="off">
+                        <button id="btn-send" class="absolute right-3 w-10 h-10 rounded-xl bg-[#F5C518] text-[#08090c] flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(245,197,24,0.3)]">
+                            <i data-lucide="send" class="w-4 h-4 ml-0.5 mt-0.5"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="hidden lg:flex w-[30%] bg-[#0c0d12]/50 flex-col overflow-y-auto p-6 space-y-8">
+                
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Questions suggérées</h2>
+                    </div>
+                    <div class="flex flex-col gap-2.5">
+                        <button class="suggestion-card btn-suggest">Quels ordres sont en cours ?</button>
+                        <button class="suggestion-card btn-suggest">Quels composants manquent pour OP-2848 ?</button>
+                        <button class="suggestion-card btn-suggest">Combien de temps pour assembler 15 PC ?</button>
+                        <button class="suggestion-card btn-suggest">Quelles réparations sont en attente ?</button>
+                        <button class="suggestion-card btn-suggest">Quel est mon rendement ce mois ?</button>
+                        <button class="suggestion-card btn-suggest">Peut-on démarrer une production partielle ?</button>
+                        <button class="suggestion-card btn-suggest">Quand arrivent les composants manquants ?</button>
+                        <button class="suggestion-card btn-suggest">Quel ordre terminer en priorité ?</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Contexte agent</h2>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl border border-white/5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Rôle</span>
+                            <span class="px-2 py-0.5 bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-bold rounded uppercase">Responsable Production</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Entreprise</span>
+                            <span class="text-xs font-bold text-white">TechBuild Industries</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Données accessibles</span>
+                            <span class="text-xs font-bold text-white">Production + Stock + Réparations</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Dernière mise à jour</span>
+                            <span class="text-xs font-medium text-gray-300">Il y a 4 minutes</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Modèle</span>
+                            <span class="text-xs font-bold text-[#F5C518]">Mistral Large</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-2 mb-2">
+                            <span class="text-xs text-gray-500">Historique conversation</span>
+                            <span class="text-xs font-medium text-gray-300">5 messages</span>
+                        </div>
+                        <button class="btn-ghost-sm w-full py-2 rounded-lg text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Effacer la conversation
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Actions rapides</h2>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="dashboard-production.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="cpu" class="w-4 h-4"></i> Voir les ordres
+                        </a>
+                        <a href="dashboard-stock.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="package" class="w-4 h-4"></i> Voir le stock
+                        </a>
+                        <a href="dashboard-production.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="tool" class="w-4 h-4"></i> Voir les réparations
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // 1. Initialisation Icônes
+        lucide.createIcons();
+
+        // 2. Éléments DOM
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const btnSend = document.getElementById('btn-send');
+        const suggestionBtns = document.querySelectorAll('.btn-suggest');
+
+        // 3. Scroll Automatique vers le bas
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        window.addEventListener('load', scrollToBottom);
+
+        // 4. Moteur de réponse par Mots-clés (Base de Connaissance Agent Production)
+        const getAgentResponse = (query) => {
+            const q = query.toLowerCase();
+            
+            if (q.includes('ordre') || q.includes('production') || q.includes('cours')) {
+                return "3 ordres en cours : OP-2848 urgent 17 PC Gaming Premium bloqué composants manquants, OP-2847 normal 15 PC Bureau Entreprise progression 60%, OP-2846 faible 8 PC Gaming Standard progression 25%. 18 ordres terminés ce mois 187 unités.";
+            } 
+            else if (q.includes('composant') || q.includes('manque') || q.includes('bloqué')) {
+                return "Composants insuffisants pour OP-2848 : GPU RTX 4090 stock 3 besoin 17 livraison AMDSupply 28 Avril, Processeur i9 stock 8 besoin 17 livraison IntelDistrib 22 Avril. Tous les autres composants sont disponibles en quantité suffisante.";
+            } 
+            else if (q.includes('réparation') || q.includes('reparation') || q.includes('retour')) {
+                return "2 réparations en attente : RET-2026-0018 PC Gaming Premium GPU défectueux en attente pièce, RET-2026-0015 Serveur Entry Level disque dur en cours de réparation délai 2 jours. Priorité RET-2026-0015 car pièce disponible.";
+            } 
+            else if (q.includes('temps') || q.includes('combien') || q.includes('durée') || q.includes('duree')) {
+                return "Durées moyennes assemblage TechBuild : PC Gaming Standard 35 minutes, PC Gaming Premium 45 minutes, PC Workstation 60 minutes, PC Bureau Entreprise 30 minutes, Serveur Entry Level 90 minutes. Basé sur l'historique des 18 derniers ordres.";
+            } 
+            else if (q.includes('rendement') || q.includes('performance') || q.includes('mois')) {
+                return "Rendement avril : 18 ordres 187 unités assemblées durée moyenne 42 minutes par unité en hausse 12% vs mars. Aucun ordre annulé. 1 ordre bloqué OP-2848 composants manquants.";
+            } 
+            else {
+                return "Je suis votre assistant production. Je peux vous aider sur les ordres en cours, les composants disponibles, les durées d'assemblage, les réparations retours et le rendement de production. Que souhaitez-vous savoir ?";
+            }
+        };
+
+        // 5. Générer le composant de "Réflexion"
+        const createTypingIndicator = () => {
+            const div = document.createElement('div');
+            div.className = 'msg-agent typing-box animate-msg';
+            div.id = 'typing-indicator';
+            div.innerHTML = `
+                <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                    <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent réfléchit</span>
+                </div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            return div;
+        };
+
+        // 6. Logique d'envoi et de réponse
+        const handleSend = () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Ajouter le message de l'utilisateur
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg-user animate-msg';
+            userMsg.textContent = text;
+            chatContainer.appendChild(userMsg);
+            
+            // Clear input and scroll
+            chatInput.value = '';
+            scrollToBottom();
+
+            // Ajouter l'indicateur de frappe
+            const typingIndicator = createTypingIndicator();
+            chatContainer.appendChild(typingIndicator);
+            scrollToBottom();
+
+            // Simuler le délai de l'API
+            setTimeout(() => {
+                // Supprimer l'indicateur
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+
+                // Créer la réponse de l'agent
+                const responseText = getAgentResponse(text);
+                const agentMsg = document.createElement('div');
+                agentMsg.className = 'msg-agent animate-msg';
+                agentMsg.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                        <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                    </div>
+                    ${responseText}
+                `;
+                
+                chatContainer.appendChild(agentMsg);
+                scrollToBottom();
+            }, 1500);
+        };
+
+        // 7. Event Listeners
+        btnSend.addEventListener('click', handleSend);
+        
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // 8. Event Listeners pour les Suggestions
+        suggestionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                chatInput.value = btn.textContent;
+                chatInput.focus();
+            });
+        });
+
+    </script>
+</body>
+</html>

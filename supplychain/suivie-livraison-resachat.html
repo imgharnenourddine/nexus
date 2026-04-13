@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de livraison - NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #F5C518;
+            border: 1px solid rgba(245, 197, 24, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover {
+            background: rgba(245, 197, 24, 0.1);
+            border-color: #F5C518;
+        }
+
+        /* Inputs */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+
+        .input-disabled {
+            background-color: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        /* Tables & Badges */
+        .table-row-alt:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
+        
+        .badge-active { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .badge-pending { background-color: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .badge-disabled { background-color: rgba(156, 163, 175, 0.1); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.2); }
+
+        /* Animations */
+        @keyframes pulse-opacity {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.85); }
+        }
+        .animate-pulse-opacity {
+            animation: pulse-opacity 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tableau de bord
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Fournisseurs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="send" class="w-5 h-5"></i> Appels d'offre
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium">
+                    <i data-lucide="file-text" class="w-5 h-5 text-[#F5C518]"></i> Commandes fournisseurs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="package" class="w-5 h-5"></i> Stock lecture seule
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Ahmed Bennani</p>
+                        <p class="text-xs text-gray-500">Resp. Achats</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <h1 class="text-xl font-bold text-white flex items-center gap-2">Suivi de livraison — BC-2026-0312</h1>
+            
+            <div class="flex items-center gap-6">
+                <button class="relative text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#08090c]"></span>
+                </button>
+                <div class="w-px h-6 bg-white/10"></div>
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 pb-16 space-y-10">
+            
+            <section>
+                <div class="glass-panel p-6 rounded-2xl border border-[#F5C518]/40 bg-gradient-to-r from-[#F5C518]/10 to-transparent flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+                    <div class="flex items-center gap-6 z-10">
+                        <div class="p-4 bg-[#F5C518]/20 rounded-2xl shrink-0">
+                            <i data-lucide="package" class="w-10 h-10 text-[#F5C518]"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-white mb-1">Commande BC-2026-0312 — <span class="text-[#F5C518]">En transit</span></h2>
+                            <p class="text-sm font-medium text-gray-400 mb-1 flex items-center gap-1.5"><i data-lucide="arrow-right-circle" class="w-4 h-4"></i> AMDSupply <i data-lucide="arrow-right" class="w-3 h-3 text-gray-600"></i> TechBuild Industries, Casablanca</p>
+                            <p class="text-sm text-gray-300 font-bold">20 unités GPU NVIDIA RTX 4090 — 35 600 MAD HT</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-start md:items-end gap-2 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6 z-10 w-full md:w-auto">
+                        <p class="text-sm text-gray-300"><span class="text-gray-500">Date de commande :</span> 12 Avril 2026</p>
+                        <p class="text-sm text-gray-300"><span class="text-gray-500">Livraison estimée :</span> <span class="font-bold text-white">28 Avril 2026</span></p>
+                        <span class="badge-pending px-3 py-1 text-xs font-bold rounded-lg uppercase tracking-wider mt-1">Dans 16 jours</span>
+                        <p class="text-xs text-green-400 font-bold flex items-center gap-1 mt-1"><i data-lucide="brain" class="w-3 h-3"></i> Risque de retard : Faible +1 jour prédit par ML</p>
+                    </div>
+
+                    <div class="absolute -right-20 -bottom-20 opacity-5 pointer-events-none">
+                        <i data-lucide="truck" class="w-64 h-64"></i>
+                    </div>
+                </div>
+            </section>
+
+            <section class="max-w-4xl mx-auto px-4 md:px-12">
+                <div class="flex items-center mb-8 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Historique d'expédition</h2>
+                </div>
+
+                <div class="relative border-l-2 border-white/10 ml-5 md:ml-6 space-y-10 pb-4">
+                    
+                    <div class="relative pl-8 md:pl-10">
+                        <div class="absolute w-8 h-8 rounded-full bg-green-500/20 border-2 border-green-500 -left-[17px] top-0 flex items-center justify-center">
+                            <i data-lucide="check" class="w-4 h-4 text-green-500"></i>
+                        </div>
+                        <h4 class="text-white font-bold text-base mb-1">Bon de commande envoyé</h4>
+                        <p class="text-sm text-gray-400 mb-1">BC-2026-0312 transmis à procurement@amdsupply.cn via SMTP</p>
+                        <p class="text-xs text-gray-500 font-bold">12 Avril 2026 09h47</p>
+                    </div>
+
+                    <div class="relative pl-8 md:pl-10">
+                        <div class="absolute w-8 h-8 rounded-full bg-green-500/20 border-2 border-green-500 -left-[17px] top-0 flex items-center justify-center">
+                            <i data-lucide="check" class="w-4 h-4 text-green-500"></i>
+                        </div>
+                        <h4 class="text-white font-bold text-base mb-1">Commande confirmée par le fournisseur</h4>
+                        <p class="text-sm text-gray-400 mb-1">AMDSupply a confirmé la réception et la disponibilité des 20 unités</p>
+                        <p class="text-xs text-gray-500 font-bold">12 Avril 2026 14h23</p>
+                    </div>
+
+                    <div class="relative pl-8 md:pl-10">
+                        <div class="absolute w-8 h-8 rounded-full bg-green-500/20 border-2 border-green-500 -left-[17px] top-0 flex items-center justify-center">
+                            <i data-lucide="check" class="w-4 h-4 text-green-500"></i>
+                        </div>
+                        <h4 class="text-white font-bold text-base mb-1">Préparation en cours</h4>
+                        <p class="text-sm text-gray-400 mb-1">AMDSupply a confirmé la mise en préparation de la commande</p>
+                        <p class="text-xs text-gray-500 font-bold">13 Avril 2026 08h30</p>
+                    </div>
+
+                    <div class="relative pl-8 md:pl-10">
+                        <div class="absolute w-8 h-8 rounded-full bg-[#0c0d12] border-2 border-[#F5C518] shadow-[0_0_15px_rgba(245,197,24,0.4)] -left-[17px] top-0 flex items-center justify-center z-10">
+                            <div class="w-3 h-3 bg-[#F5C518] rounded-full animate-pulse-opacity"></div>
+                        </div>
+                        <div class="absolute w-[2px] h-full bg-gradient-to-b from-[#F5C518] to-transparent -left-[1px] top-8 z-0"></div>
+
+                        <h4 class="text-[#F5C518] font-bold text-lg mb-1">Expédition en cours</h4>
+                        <p class="text-sm text-white mb-1">Colis pris en charge par le transporteur — Référence expédition : AMD-SHP-20260413</p>
+                        <p class="text-xs text-[#F5C518] font-bold">13 Avril 2026 16h45</p>
+                    </div>
+
+                    <div class="relative pl-8 md:pl-10 opacity-60">
+                        <div class="absolute w-8 h-8 rounded-full bg-[#0c0d12] border-2 border-gray-600 -left-[17px] top-0 flex items-center justify-center">
+                            <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                        </div>
+                        <h4 class="text-gray-300 font-bold text-base mb-1">En douane Maroc</h4>
+                        <p class="text-sm text-gray-400 mb-1">Passage en douane prévu à Casablanca Port</p>
+                        <p class="text-xs text-gray-500 font-bold">Estimé 22 Avril 2026</p>
+                    </div>
+
+                    <div class="relative pl-8 md:pl-10 opacity-60">
+                        <div class="absolute w-8 h-8 rounded-full bg-[#0c0d12] border-2 border-gray-600 -left-[17px] top-0 flex items-center justify-center">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-600"></i>
+                        </div>
+                        <h4 class="text-gray-300 font-bold text-base mb-1">Livraison TechBuild</h4>
+                        <p class="text-sm text-gray-400 mb-1">Réception à confirmer par le magasinier Youssef Tahiri</p>
+                        <p class="text-xs text-gray-500 font-bold">Estimé 28 Avril 2026</p>
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Relances automatiques</h2>
+                    </div>
+
+                    <div class="overflow-x-auto border border-white/5 rounded-xl mb-4">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-black/20">
+                                    <th class="p-3 border-b border-white/5 text-xs text-gray-400 font-semibold uppercase">Date & Heure</th>
+                                    <th class="p-3 border-b border-white/5 text-xs text-gray-400 font-semibold uppercase">Type</th>
+                                    <th class="p-3 border-b border-white/5 text-xs text-gray-400 font-semibold uppercase">Destinataire</th>
+                                    <th class="p-3 border-b border-white/5 text-xs text-gray-400 font-semibold uppercase">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-row-alt">
+                                    <td class="p-3 border-b border-white/5 text-gray-300">12 Avril 09h47</td>
+                                    <td class="p-3 border-b border-white/5 font-medium text-white">Confirmation commande</td>
+                                    <td class="p-3 border-b border-white/5 text-gray-400">procurement@amdsupply.cn</td>
+                                    <td class="p-3 border-b border-white/5"><span class="badge-active px-2 py-0.5 text-[10px] uppercase font-bold rounded">Envoyé</span></td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td class="p-3 border-b border-white/5 text-gray-300">13 Avril 09h00</td>
+                                    <td class="p-3 border-b border-white/5 font-medium text-white">Relance J+1 confirmation</td>
+                                    <td class="p-3 border-b border-white/5 text-gray-400">procurement@amdsupply.cn</td>
+                                    <td class="p-3 border-b border-white/5"><span class="badge-active px-2 py-0.5 text-[10px] uppercase font-bold rounded">Envoyé</span></td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td class="p-3 border-b border-white/5 text-gray-300">18 Avril 09h00</td>
+                                    <td class="p-3 border-b border-white/5 font-medium text-white">Relance J+6 statut</td>
+                                    <td class="p-3 border-b border-white/5 text-gray-400">procurement@amdsupply.cn</td>
+                                    <td class="p-3 border-b border-white/5"><span class="badge-disabled px-2 py-0.5 text-[10px] uppercase font-bold rounded border-gray-600/50">Planifié</span></td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td class="p-3 border-b border-white/5 text-gray-300">25 Avril 09h00</td>
+                                    <td class="p-3 border-b border-white/5 font-medium text-white">Relance J+13 date promise</td>
+                                    <td class="p-3 border-b border-white/5 text-gray-400">procurement@amdsupply.cn</td>
+                                    <td class="p-3 border-b border-white/5"><span class="badge-disabled px-2 py-0.5 text-[10px] uppercase font-bold rounded border-gray-600/50">Planifié</span></td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td class="p-3 text-gray-300">28 Avril 09h00</td>
+                                    <td class="p-3 font-medium text-white">Alerte retard si non reçu</td>
+                                    <td class="p-3 text-gray-400">ahmed.bennani@techbuild.com</td>
+                                    <td class="p-3"><span class="badge-disabled px-2 py-0.5 text-[10px] uppercase font-bold rounded border-gray-600/50">Planifié</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-xs text-gray-500 flex items-start gap-1.5 mt-auto">
+                        <i data-lucide="bot" class="w-4 h-4 text-gray-400 shrink-0"></i> Les relances sont envoyées automatiquement par l'agent NEXUS. Aucune intervention manuelle requise.
+                    </p>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Informations commande</h2>
+                    </div>
+
+                    <div class="space-y-3.5 text-sm flex-1 bg-white/[0.01] p-5 rounded-xl border border-white/5">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Référence</span>
+                            <span class="font-mono text-white font-bold">BC-2026-0312</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Fournisseur</span>
+                            <span class="font-bold text-white">AMDSupply</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Pays origine</span>
+                            <span class="font-medium text-white">Chine</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Composant</span>
+                            <span class="font-bold text-white">GPU NVIDIA RTX 4090</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Quantité</span>
+                            <span class="font-bold text-white">20 unités</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Montant HT</span>
+                            <span class="font-bold text-white">35 600 MAD</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Montant TTC</span>
+                            <span class="font-bold text-[#F5C518]">42 720 MAD</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Conditions paiement</span>
+                            <span class="font-medium text-white">30 jours</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Échéance paiement</span>
+                            <span class="font-medium text-white">12 Mai 2026</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-gray-400">Transporteur fournisseur</span>
+                            <span class="font-bold text-white">DHL International</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Référence expédition</span>
+                            <span class="font-mono font-medium text-white bg-white/10 px-2 py-0.5 rounded">AMD-SHP-20260413</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-ghost w-full py-3 rounded-xl font-bold text-sm tracking-wide mt-5 flex justify-center items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Télécharger le bon de commande PDF
+                    </button>
+                </div>
+            </section>
+
+            <section class="max-w-4xl mx-auto">
+                <div class="glass-panel p-6 md:p-8 rounded-2xl border-2 border-dashed border-[#F5C518]/30 bg-gradient-to-br from-[#0c0d12] to-[#1a1b26]">
+                    <div class="flex items-center mb-4 gap-3">
+                        <div class="p-2 bg-[#F5C518]/10 rounded-lg">
+                            <i data-lucide="clipboard-check" class="w-5 h-5 text-[#F5C518]"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-white">Confirmation de réception</h2>
+                    </div>
+                    
+                    <p class="text-sm text-gray-300 mb-6">Cette section sera complétée par le magasinier Youssef Tahiri lors de la réception physique des composants.</p>
+
+                    <form class="space-y-5 opacity-60">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Date de réception</label>
+                                <input type="date" disabled class="input-disabled w-full rounded-lg px-4 py-2.5 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Quantité reçue</label>
+                                <input type="number" disabled class="input-disabled w-full rounded-lg px-4 py-2.5 text-sm" placeholder="Ex: 20">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">État des composants</label>
+                            <select disabled class="input-disabled w-full rounded-lg px-4 py-2.5 text-sm appearance-none">
+                                <option>Conforme</option>
+                                <option>Partiellement conforme</option>
+                                <option>Non conforme</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">Observations</label>
+                            <textarea disabled rows="2" class="input-disabled w-full rounded-lg px-4 py-2.5 text-sm" placeholder="Commentaires éventuels à l'inspection..."></textarea>
+                        </div>
+
+                        <button disabled type="button" class="w-full py-3.5 rounded-xl font-bold text-sm tracking-wide bg-white/5 text-gray-500 border border-white/10 cursor-not-allowed">
+                            Confirmer la réception — Réservé au magasinier
+                        </button>
+                    </form>
+
+                    <p class="text-xs text-gray-500 flex items-start gap-1.5 mt-5">
+                        <i data-lucide="info" class="w-4 h-4 text-gray-400 shrink-0"></i> La confirmation de réception débloquera automatiquement les ordres de production en attente et mettra à jour le stock en temps réel.
+                    </p>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Autres commandes fournisseurs actives</h2>
+                </div>
+
+                <div class="glass-panel rounded-2xl overflow-hidden border border-white/5">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr class="bg-black/30">
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Référence</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Fournisseur</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Composant</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Statut</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Livraison estimée</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-mono text-sm text-gray-300">BC-2026-0310</td>
+                                <td class="p-4 font-bold text-sm text-white">KingstonPro</td>
+                                <td class="p-4 text-sm text-gray-300">RAM DDR5 32GB <span class="text-gray-500 ml-1">45 unités</span></td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full">Livré</span></td>
+                                <td class="p-4 text-sm text-gray-400">10 Avril 2026</td>
+                                <td class="p-4 text-right"><button class="btn-ghost px-3 py-1.5 rounded text-xs font-bold">Voir</button></td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-mono text-sm text-gray-300">BC-2026-0308</td>
+                                <td class="p-4 font-bold text-sm text-white">SamsungSSD</td>
+                                <td class="p-4 text-sm text-gray-300">SSD NVMe 1TB <span class="text-gray-500 ml-1">30 unités</span></td>
+                                <td class="p-4"><span class="badge-pending px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full">En transit</span></td>
+                                <td class="p-4 text-sm text-white font-medium">20 Avril 2026</td>
+                                <td class="p-4 text-right"><button class="btn-ghost px-3 py-1.5 rounded text-xs font-bold">Voir</button></td>
+                            </tr>
+                            <tr class="table-row-alt hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-mono text-sm text-gray-300">BC-2026-0305</td>
+                                <td class="p-4 font-bold text-sm text-white">LocalElec</td>
+                                <td class="p-4 text-sm text-gray-300">Câbles et visserie</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full">Livré</span></td>
+                                <td class="p-4 text-sm text-gray-400">05 Avril 2026</td>
+                                <td class="p-4 text-right"><button class="btn-ghost px-3 py-1.5 rounded text-xs font-bold">Voir</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

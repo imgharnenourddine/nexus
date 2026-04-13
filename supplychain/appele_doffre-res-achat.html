@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appels d'offre - NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #F5C518;
+            border: 1px solid rgba(245, 197, 24, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover {
+            background: rgba(245, 197, 24, 0.1);
+            border-color: #F5C518;
+        }
+
+        /* Inputs */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+        .input-dark:read-only {
+            background-color: rgba(255, 255, 255, 0.01);
+            color: #9ca3af;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        /* Tables & Badges */
+        .table-row-alt:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
+        
+        .badge-active { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .badge-pending { background-color: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .badge-critical { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        /* Custom Checkbox */
+        .custom-checkbox {
+            appearance: none;
+            background-color: rgba(255, 255, 255, 0.05);
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.25em;
+            height: 1.25em;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.25em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .custom-checkbox::before {
+            content: "";
+            width: 0.75em;
+            height: 0.75em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #08090c;
+            background-color: #08090c;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        .custom-checkbox:checked {
+            background-color: #F5C518;
+            border-color: #F5C518;
+        }
+        .custom-checkbox:checked::before {
+            transform: scale(1);
+        }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tableau de bord
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Fournisseurs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium">
+                    <i data-lucide="send" class="w-5 h-5 text-[#F5C518]"></i> Appels d'offre
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="file-text" class="w-5 h-5"></i> Commandes fournisseurs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="package" class="w-5 h-5"></i> Stock lecture seule
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Ahmed Bennani</p>
+                        <p class="text-xs text-gray-500">Resp. Achats</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <h1 class="text-xl font-bold text-white">Appels d'offre</h1>
+            
+            <div class="flex items-center gap-6">
+                <button class="relative text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#08090c]"></span>
+                </button>
+                <div class="w-px h-6 bg-white/10"></div>
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 pb-32 space-y-10">
+            
+            <section>
+                <div class="rounded-xl border border-[#F5C518]/40 bg-[#F5C518]/10 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-start md:items-center gap-4">
+                        <div class="p-2.5 bg-[#F5C518]/20 rounded-lg shrink-0">
+                            <i data-lucide="alert-triangle" class="w-6 h-6 text-[#F5C518]"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h4 class="text-[#F5C518] font-bold text-base">L'agent NEXUS a détecté une rupture critique</h4>
+                                <span class="badge-critical px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider">Urgent</span>
+                            </div>
+                            <p class="text-sm text-gray-300">
+                                GPU NVIDIA RTX 4090 — Stock actuel 3 unités — Seuil minimum 15 unités — Rupture prédite dans 8 jours
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-left md:text-right shrink-0 border-t md:border-t-0 md:border-l border-[#F5C518]/20 pt-3 md:pt-0 md:pl-6">
+                        <p class="text-xs text-[#F5C518] font-semibold uppercase tracking-wider mb-1 flex items-center justify-end gap-1.5"><i data-lucide="cpu" class="w-3.5 h-3.5"></i> Déclenché auto. par l'agent</p>
+                        <p class="text-sm font-medium text-white">12 Avril 2026 — 09h14</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-lg font-bold text-white">Détail de la demande d'achat</h2>
+                    </div>
+                    
+                    <form class="space-y-5 flex-1">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Composant</label>
+                            <input type="text" class="input-dark w-full rounded-lg px-4 py-2.5 text-sm font-medium" value="GPU NVIDIA RTX 4090" readonly>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Quantité demandée</label>
+                                <div class="relative">
+                                    <input type="number" class="input-dark w-full rounded-lg pl-4 pr-10 py-2.5 text-sm font-bold text-white border-[#F5C518]/50 focus:border-[#F5C518] bg-[#0c0d12]" value="20">
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400 pointer-events-none">unités</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Budget maximum</label>
+                                <div class="relative">
+                                    <input type="text" class="input-dark w-full rounded-lg pl-4 pr-12 py-2.5 text-sm font-medium" value="34 000" readonly>
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 pointer-events-none">MAD</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Délai souhaité</label>
+                                <input type="text" class="input-dark w-full rounded-lg px-4 py-2.5 text-sm font-medium" value="15 jours" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Priorité</label>
+                                <input type="text" class="input-dark w-full rounded-lg px-4 py-2.5 text-sm font-bold text-red-400" value="Urgente" readonly>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                            <h2 class="text-lg font-bold text-white">Email généré par l'agent</h2>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#F5C518]/10 border border-[#F5C518]/20">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#F5C518]"></i>
+                            <span class="text-[10px] font-bold text-[#F5C518] uppercase tracking-wider">Mistral AI</span>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-lg p-5 font-mono text-sm text-gray-300 overflow-y-auto leading-relaxed">
+                        <p class="mb-4 text-white font-bold border-b border-white/10 pb-3">Objet : Demande de prix — GPU NVIDIA RTX 4090 — 20 unités — TechBuild Industries</p>
+                        <p class="mb-4">Madame, Monsieur,</p>
+                        <p class="mb-4">Dans le cadre de nos activités d'assemblage de systèmes informatiques, nous souhaitons obtenir votre meilleure offre pour la fourniture de <span class="text-[#F5C518] font-bold">20 unités de GPU NVIDIA RTX 4090</span>.</p>
+                        <p class="mb-4">
+                            - Délai de livraison souhaité : 15 jours maximum.<br>
+                            - Budget indicatif : 34 000 MAD.
+                        </p>
+                        <p class="mb-6">Merci de nous faire parvenir votre devis détaillé incluant prix unitaire, délai de livraison confirmé et conditions de paiement.</p>
+                        <p>Cordialement,</p>
+                        <p class="text-gray-400 mt-2">
+                            Ahmed Bennani<br>
+                            Responsable Achats<br>
+                            TechBuild Industries
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Fournisseurs sélectionnés pour cet appel d'offre</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                    
+                    <div class="glass-panel p-5 rounded-xl border border-white/10 hover:border-[#F5C518]/40 transition-colors relative group">
+                        <div class="absolute top-5 right-5">
+                            <input type="checkbox" class="custom-checkbox" checked>
+                        </div>
+                        <div class="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+                            <i data-lucide="truck" class="w-5 h-5 text-gray-400 group-hover:text-[#F5C518] transition-colors"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-white mb-1">NvidiaPartner</h4>
+                        <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
+                            <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> Singapour</span>
+                            <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 25j moy.</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-white/5">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs text-gray-500 font-medium uppercase">Score :</span>
+                                <span class="text-red-400 font-bold text-sm">68/100</span>
+                            </div>
+                            <span class="text-xs text-gray-500 group-hover:text-white transition-colors" title="nvidia.partner@supply.com"><i data-lucide="mail" class="w-4 h-4"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-xl border border-white/10 hover:border-[#F5C518]/40 transition-colors relative group">
+                        <div class="absolute top-5 right-5">
+                            <input type="checkbox" class="custom-checkbox" checked>
+                        </div>
+                        <div class="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+                            <i data-lucide="truck" class="w-5 h-5 text-gray-400 group-hover:text-[#F5C518] transition-colors"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-white mb-1">IntelDistrib</h4>
+                        <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
+                            <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> Taiwan</span>
+                            <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 21j moy.</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-white/5">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs text-gray-500 font-medium uppercase">Score :</span>
+                                <span class="text-green-400 font-bold text-sm">92/100</span>
+                            </div>
+                            <span class="text-xs text-gray-500 group-hover:text-white transition-colors" title="orders@inteldistrib.tw"><i data-lucide="mail" class="w-4 h-4"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-xl border border-white/10 hover:border-[#F5C518]/40 transition-colors relative group">
+                        <div class="absolute top-5 right-5">
+                            <input type="checkbox" class="custom-checkbox" checked>
+                        </div>
+                        <div class="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+                            <i data-lucide="truck" class="w-5 h-5 text-gray-400 group-hover:text-[#F5C518] transition-colors"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-white mb-1">AMDSupply</h4>
+                        <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
+                            <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> Chine</span>
+                            <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 18j moy.</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-white/5">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs text-gray-500 font-medium uppercase">Score :</span>
+                                <span class="text-green-400 font-bold text-sm">89/100</span>
+                            </div>
+                            <span class="text-xs text-gray-500 group-hover:text-white transition-colors" title="procurement@amdsupply.cn"><i data-lucide="mail" class="w-4 h-4"></i></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-gray-500 flex items-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5"></i> L'agent a sélectionné ces fournisseurs en fonction de leurs scores et de leur capacité à fournir ce composant. Vous pouvez décocher un fournisseur avant l'envoi.</p>
+            </section>
+
+            <section>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-xl font-bold text-white">Historique des appels d'offre précédents</h2>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl overflow-hidden border border-white/5">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr class="bg-black/30">
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Date</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Composant</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5 text-center">Fournisseurs contactés</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Statut</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Meilleure offre reçue</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 text-sm text-gray-300">08 Avril 2026</td>
+                                <td class="p-4 font-bold text-sm text-white">RAM DDR5 32GB</td>
+                                <td class="p-4 text-sm text-white font-medium text-center">3</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full">Clôturé</span></td>
+                                <td class="p-4 text-sm text-gray-300"><span class="font-bold text-white">KingstonPro</span> — 1 500 MAD/unité</td>
+                                <td class="p-4 text-right"><button class="btn-ghost px-3 py-1.5 rounded text-xs font-bold">Voir</button></td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 text-sm text-gray-300">02 Avril 2026</td>
+                                <td class="p-4 font-bold text-sm text-white">Processeur Intel i9</td>
+                                <td class="p-4 text-sm text-white font-medium text-center">2</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full">Clôturé</span></td>
+                                <td class="p-4 text-sm text-gray-300"><span class="font-bold text-white">IntelDistrib</span> — 4 200 MAD/unité</td>
+                                <td class="p-4 text-right"><button class="btn-ghost px-3 py-1.5 rounded text-xs font-bold">Voir</button></td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 text-sm text-gray-300">28 Mars 2026</td>
+                                <td class="p-4 font-bold text-sm text-white">SSD NVMe 2TB</td>
+                                <td class="p-4 text-sm text-white font-medium text-center">3</td>
+                                <td class="p-4"><span class="badge-pending px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full">En attente</span></td>
+                                <td class="p-4 text-sm text-gray-500 italic">Aucune réponse</td>
+                                <td class="p-4 text-right"><button class="btn-outline-neon px-3 py-1.5 rounded text-xs font-bold text-orange-400 border-orange-400/30 hover:bg-orange-400/10">Relancer</button></td>
+                            </tr>
+                            <tr class="table-row-alt hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 text-sm text-gray-300">15 Mars 2026</td>
+                                <td class="p-4 font-bold text-sm text-white">Carte mère ASUS</td>
+                                <td class="p-4 text-sm text-white font-medium text-center">2</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full">Clôturé</span></td>
+                                <td class="p-4 text-sm text-gray-300"><span class="font-bold text-white">AsusWholesale</span> — 890 MAD/unité</td>
+                                <td class="p-4 text-right"><button class="btn-ghost px-3 py-1.5 rounded text-xs font-bold">Voir</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="absolute bottom-0 right-0 w-full md:w-[calc(100%-256px)] bg-[#0c0d12]/95 backdrop-blur-md border-t border-[#F5C518]/30 px-8 py-5 flex items-center justify-between z-20">
+            <p class="text-sm font-medium text-gray-300 flex items-center gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-400"></i> Prêt à envoyer à 3 fournisseurs simultanément
+            </p>
+            <div class="flex items-center gap-4" id="action-container">
+                <button class="btn-ghost px-6 py-3 rounded-xl font-bold text-sm transition">Modifier la demande</button>
+                <button id="send-btn" class="btn-neon px-8 py-3 rounded-xl font-bold text-sm tracking-wide flex items-center gap-2">
+                    Envoyer l'appel d'offre <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Initialisation des icônes Lucide
+        lucide.createIcons();
+
+        // Animation d'envoi du bouton
+        const sendBtn = document.getElementById('send-btn');
+        const actionContainer = document.getElementById('action-container');
+
+        sendBtn.addEventListener('click', function() {
+            // Création du badge de confirmation
+            const successBadge = document.createElement('div');
+            successBadge.className = 'flex items-center gap-2 px-6 py-3 rounded-xl bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-bold animate-pulse';
+            
+            // Formatage de l'heure actuelle pour le réalisme
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            successBadge.innerHTML = `
+                <i data-lucide="check" class="w-5 h-5"></i> 
+                Envoyé — 3 emails transmis — 12 Avril 2026 ${timeString}
+            `;
+
+            // Remplacement des boutons
+            actionContainer.innerHTML = '';
+            actionContainer.appendChild(successBadge);
+
+            // Re-render des icones dans le nouveau DOM
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

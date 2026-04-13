@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent NEXUS - Assistant Commercial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+            overflow: hidden;
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost-sm {
+            background: transparent;
+            color: #9ca3af;
+            border: 1px solid rgba(156, 163, 175, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost-sm:hover {
+            background: rgba(156, 163, 175, 0.1);
+            border-color: #9ca3af;
+            color: white;
+        }
+
+        /* Inputs */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        .nexus-brand-sm { display: inline-flex; align-items: center; }
+        .brand-logo-sm { height: 14px; vertical-align: middle; }
+        .brand-suffix-sm { font-weight: 700; color: #FFFFFF; font-size: 12px; letter-spacing: -0.02em; margin-left: 1px; }
+
+        /* Chat Bubbles */
+        .msg-user {
+            background-color: #F5C518;
+            color: #08090c;
+            border-radius: 16px 16px 4px 16px;
+            padding: 12px 16px;
+            max-width: 70%;
+            align-self: flex-end;
+            font-weight: 500;
+        }
+        .msg-agent {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #d1d5db; /* gray-300 */
+            border-radius: 16px 16px 16px 4px;
+            padding: 14px 18px;
+            max-width: 75%;
+            align-self: flex-start;
+            line-height: 1.6;
+        }
+
+        /* Suggestions Cards */
+        .suggestion-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(245, 197, 24, 0.2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .suggestion-card:hover {
+            background: rgba(245, 197, 24, 0.05);
+            border-color: #F5C518;
+            color: #ffffff;
+        }
+
+        /* Typing Indicator Animation */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 4px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #F5C518;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-msg { animation: fadeInMsg 0.3s ease-out forwards; }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tableau de bord
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="building-2" class="w-5 h-5"></i> Clients
+                </a>
+                <a href="commandes-clients.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="shopping-cart" class="w-5 h-5"></i> Commandes clients
+                </a>
+                <a href="selection-transporteur.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Sélection transporteur
+                </a>
+                <a href="gestion-retour.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Retours
+                </a>
+                <a href="analytics.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Analytics
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium mt-4">
+                    <i data-lucide="cpu" class="w-5 h-5 text-[#F5C518]"></i> Agent IA
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Sara Idrissi</p>
+                        <p class="text-xs text-gray-500">Resp. Commercial</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <div class="flex items-center gap-4">
+                <h1 class="text-xl font-bold text-white">Agent NEXUS — Assistant Commercial</h1>
+                <div class="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span class="text-xs font-bold text-green-400 uppercase tracking-wider">Agent actif</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 flex overflow-hidden">
+            
+            <div class="w-full lg:w-[70%] flex flex-col border-r border-white/5 relative">
+                
+                <div class="p-6 shrink-0 z-10 bg-gradient-to-b from-[#08090c] to-transparent">
+                    <div class="glass-panel p-4 rounded-xl border border-white/10 flex items-start gap-4">
+                        <div class="p-2 bg-[#F5C518]/10 rounded-lg shrink-0 border border-[#F5C518]/20">
+                            <i data-lucide="cpu" class="w-5 h-5 text-[#F5C518]"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white mb-1">Contexte agent actif</h3>
+                            <p class="text-xs text-gray-400 leading-relaxed">
+                                L'agent a accès aux données commerciales de TechBuild Industries : 4 clients actifs, 8 commandes en cours, historique 47 commandes ce mois, 7 retours traités, prédictions commandes ML actives. Rôle connecté : Responsable Commercial — accès limité aux données clients, commandes et retours.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-container" class="flex-1 overflow-y-auto px-6 pb-24 flex flex-col gap-6" style="height: calc(100vh - 320px);">
+                    
+                    <div class="msg-user">
+                        Quel client va commander prochainement ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Selon le modèle ML, 4 commandes sont prédites dans les 30 prochains jours. CorpIT Solutions va commander 15 PC Gaming Standard dans 12 jours avec une confiance de 87%. EduTech Maroc va commander 25 PC Bureau Entreprise dans 18 jours avec une confiance de 79%. DataCenter MA va commander 3 Serveurs Entry Level dans 22 jours avec une confiance de 71%. CyberArena va commander 20 PC Gaming Premium dans 28 jours avec une confiance de 84% mais le stock sera insuffisant — approvisionnement suggéré.
+                    </div>
+
+                    <div class="msg-user">
+                        Quel est le taux de satisfaction de CyberArena ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        CyberArena est votre client le plus actif. 12 commandes historiques pour un total de 1 420 000 MAD. Taux de retour 8.3% légèrement au-dessus de la moyenne 3.2% principalement lié au défaut série GPU RTX 4090 NvidiaPartner. Délai de paiement moyen 28 jours sur 30 jours convenus. Dernière commande CMD-2026-0090 en cours de production. Statut client VIP — retours approuvés automatiquement sous 5 000 MAD. Satisfaction globale bonne malgré les retours GPU.
+                    </div>
+
+                    <div class="msg-user">
+                        Quel transporteur a le plus de problèmes ce mois ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        CTM Messagerie a le taux de fiabilité le plus bas ce mois à 88%. 2 livraisons en retard sur 8 expéditions. 1 produit endommagé signalé par CorpIT Solutions commande CMD-2026-0087. Score actuel 61/100 en baisse. DHL Express reste le transporteur le plus fiable avec 98% de livraisons à temps sur 18 expéditions ce mois. Je recommande d'éviter CTM Messagerie pour les commandes urgentes et les clients VIP.
+                    </div>
+
+                    <div class="msg-user">
+                        Résume les retours clients ce mois
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        7 retours traités ce mois pour un coût total de 12 400 MAD. 4 retours responsabilité NvidiaPartner GPU RTX 4090 défectueux tous chez CyberArena. 1 retour erreur interne mauvais produit livré chez CorpIT Solutions résolu par remplacement immédiat. 1 retour annulation EduTech Maroc remboursement 8 500 MAD. 1 retour produit endommagé transport CorpIT Solutions responsabilité CTM Messagerie. Taux de retour global 3.2% en baisse de 0.5 point par rapport à mars. Tendance positive mais défaut série GPU nécessite action urgente.
+                    </div>
+
+                    <div class="msg-user">
+                        Quel est le chiffre d'affaires par client ce mois ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Chiffre d'affaires par client avril 2026. CyberArena 683 300 MAD soit 29% du total avec 3 commandes. EduTech Maroc 521 200 MAD soit 22% avec 4 commandes. CorpIT Solutions 748 500 MAD soit 32% avec 5 commandes premier client ce mois. DataCenter MA 387 000 MAD soit 17% avec 2 commandes. Total général 2 340 000 MAD. CorpIT Solutions dépasse CyberArena ce mois grâce à 2 commandes serveurs à haute valeur.
+                    </div>
+
+                    </div>
+
+                <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0c0d12] via-[#0c0d12]/90 to-transparent p-6 pt-10">
+                    <div class="relative max-w-4xl mx-auto flex items-center">
+                        <input type="text" id="chat-input" placeholder="Posez votre question à l'agent NEXUS..." class="w-full bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-2xl pl-6 pr-16 py-4 text-sm text-white focus:border-[#F5C518] focus:bg-white/[0.05] focus:outline-none transition-all shadow-lg" autocomplete="off">
+                        <button id="btn-send" class="absolute right-3 w-10 h-10 rounded-xl bg-[#F5C518] text-[#08090c] flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(245,197,24,0.3)]">
+                            <i data-lucide="send" class="w-4 h-4 ml-0.5 mt-0.5"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="hidden lg:flex w-[30%] bg-[#0c0d12]/50 flex-col overflow-y-auto p-6 space-y-8">
+                
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Questions suggérées</h2>
+                    </div>
+                    <div class="flex flex-col gap-2.5">
+                        <button class="suggestion-card btn-suggest">Quel client va commander prochainement ?</button>
+                        <button class="suggestion-card btn-suggest">Quel est le taux de retour ce mois ?</button>
+                        <button class="suggestion-card btn-suggest">Quel transporteur est le plus fiable ?</button>
+                        <button class="suggestion-card btn-suggest">Résume les commandes en retard</button>
+                        <button class="suggestion-card btn-suggest">Quel client génère le plus de CA ?</button>
+                        <button class="suggestion-card btn-suggest">Quels retours sont en attente de décision ?</button>
+                        <button class="suggestion-card btn-suggest">CyberArena est-il satisfait ?</button>
+                        <button class="suggestion-card btn-suggest">Quel produit a le plus de retours ?</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Contexte agent</h2>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl border border-white/5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Rôle</span>
+                            <span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-bold rounded uppercase">Responsable Commercial</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Entreprise</span>
+                            <span class="text-xs font-bold text-white">TechBuild Industries</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Données accessibles</span>
+                            <span class="text-xs font-bold text-white">Clients + Commandes + Retours</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Dernière mise à jour</span>
+                            <span class="text-xs font-medium text-gray-300">Il y a 1 minute</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Modèle</span>
+                            <span class="text-xs font-bold text-[#F5C518]">Mistral Large</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-2 mb-2">
+                            <span class="text-xs text-gray-500">Historique conversation</span>
+                            <span class="text-xs font-medium text-gray-300">5 messages</span>
+                        </div>
+                        <button class="btn-ghost-sm w-full py-2 rounded-lg text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Effacer la conversation
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Actions rapides</h2>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="commandes-clients.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="shopping-cart" class="w-4 h-4"></i> Voir les commandes
+                        </a>
+                        <a href="gestion-retour.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Voir les retours
+                        </a>
+                        <a href="selection-transporteur.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="truck" class="w-4 h-4"></i> Sélectionner transporteur
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // 1. Initialisation Icônes
+        lucide.createIcons();
+
+        // 2. Éléments DOM
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const btnSend = document.getElementById('btn-send');
+        const suggestionBtns = document.querySelectorAll('.btn-suggest');
+
+        // 3. Scroll Automatique vers le bas
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        window.addEventListener('load', scrollToBottom);
+
+        // 4. Moteur de réponse par Mots-clés (Base de Connaissance Agent Commercial)
+        const getAgentResponse = (query) => {
+            const q = query.toLowerCase();
+            
+            if (q.includes('client')) {
+                return "Clients actifs : CyberArena VIP 12 commandes historiques, EduTech Maroc 8 commandes, CorpIT Solutions 15 commandes premier client, DataCenter MA 5 commandes trimestrielles. Prochain à commander : CorpIT Solutions dans 12 jours selon ML.";
+            } 
+            else if (q.includes('commande')) {
+                return "8 commandes en cours : CMD-2026-0090 CyberArena en production, CMD-2026-0089 CyberArena en transit DHL, CMD-2026-0088 EduTech en transit Aramex, CMD-2026-0087 CorpIT en retard, CMD-2026-0086 DataCenter en retard. 2 commandes nécessitent votre attention.";
+            } 
+            else if (q.includes('retour')) {
+                return "7 retours ce mois. Taux 3.2% en baisse. 4 liés à NvidiaPartner GPU défectueux. Coût total 12 400 MAD. 1 retour en attente de décision RET-2026-0018 CyberArena PC Gaming Premium 4 200 MAD.";
+            } 
+            else if (q.includes('transporteur')) {
+                return "Fiabilité transporteurs ce mois : DHL Express 98% recommandé, FedEx 97%, Aramex 95%, Amana Express 91%, CTM Messagerie 88% déconseillé pour urgences. CTM a 2 retards et 1 produit endommagé ce mois.";
+            } 
+            else if (q.includes('prédiction') || q.includes('prediction') || q.includes('commander')) {
+                return "Prochaines commandes prédites : CorpIT Solutions 15 PC dans 12 jours confiance 87%, EduTech Maroc 25 PC dans 18 jours confiance 79%, DataCenter MA 3 serveurs dans 22 jours confiance 71%, CyberArena 20 PC dans 28 jours confiance 84% stock insuffisant.";
+            } 
+            else {
+                return "Je suis votre assistant commercial. Je peux vous aider sur les clients, les commandes en cours, les retours, les transporteurs et les prédictions de commandes. Que souhaitez-vous savoir ?";
+            }
+        };
+
+        // 5. Générer le composant de "Réflexion"
+        const createTypingIndicator = () => {
+            const div = document.createElement('div');
+            div.className = 'msg-agent typing-box animate-msg';
+            div.id = 'typing-indicator';
+            div.innerHTML = `
+                <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                    <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent réfléchit</span>
+                </div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            return div;
+        };
+
+        // 6. Logique d'envoi et de réponse
+        const handleSend = () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Ajouter le message de l'utilisateur
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg-user animate-msg';
+            userMsg.textContent = text;
+            chatContainer.appendChild(userMsg);
+            
+            // Clear input and scroll
+            chatInput.value = '';
+            scrollToBottom();
+
+            // Ajouter l'indicateur de frappe
+            const typingIndicator = createTypingIndicator();
+            chatContainer.appendChild(typingIndicator);
+            scrollToBottom();
+
+            // Simuler le délai de l'API
+            setTimeout(() => {
+                // Supprimer l'indicateur
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+
+                // Créer la réponse de l'agent
+                const responseText = getAgentResponse(text);
+                const agentMsg = document.createElement('div');
+                agentMsg.className = 'msg-agent animate-msg';
+                agentMsg.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                        <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                    </div>
+                    ${responseText}
+                `;
+                
+                chatContainer.appendChild(agentMsg);
+                scrollToBottom();
+            }, 1500);
+        };
+
+        // 7. Event Listeners
+        btnSend.addEventListener('click', handleSend);
+        
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // 8. Event Listeners pour les Suggestions
+        suggestionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                chatInput.value = btn.textContent;
+                chatInput.focus();
+            });
+        });
+
+    </script>
+</body>
+</html>

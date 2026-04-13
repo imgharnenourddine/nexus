@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion du Stock - NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Inputs */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        /* Tables & Badges */
+        .table-row-alt:nth-child(even):not(.row-alert):not(.row-critical) { background-color: rgba(255, 255, 255, 0.02); }
+        
+        .row-critical { background-color: rgba(239, 68, 68, 0.05); }
+        .row-alert { background-color: rgba(249, 115, 22, 0.05); }
+
+        .badge-active { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .badge-pending { background-color: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .badge-critical { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium">
+                    <i data-lucide="package" class="w-5 h-5 text-[#F5C518]"></i> Stock
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="clipboard-check" class="w-5 h-5"></i> Réceptions
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Retours
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Youssef Tahiri</p>
+                        <p class="text-xs text-gray-500">Magasinier</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c]">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <h1 class="text-xl font-bold text-white">Gestion du stock</h1>
+            
+            <div class="flex items-center gap-6">
+                <button class="relative text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#08090c]"></span>
+                </button>
+                <div class="w-px h-6 bg-white/10"></div>
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-10">
+            
+            <section>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl border-l-2 border-[#F5C518]">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Total composants en stock</p>
+                        <h3 class="text-3xl font-black text-white">847 <span class="text-lg text-gray-500">unités</span></h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +23 aujourd'hui</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border-l-2 border-red-500">
+                        <p class="text-gray-400 text-sm font-medium mb-1">En rupture critique</p>
+                        <h3 class="text-3xl font-black text-red-400">2</h3>
+                        <p class="text-xs text-red-500 mt-2 font-bold flex items-center gap-1"><i data-lucide="alert-octagon" class="w-3 h-3"></i> Action requise</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border-l-2 border-orange-500">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Sous le seuil d'alerte</p>
+                        <h3 class="text-3xl font-black text-orange-400">5</h3>
+                        <p class="text-xs text-orange-500 mt-2 font-bold flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i> Surveillance active</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border-l-2 border-[#F5C518]">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Valeur totale du stock</p>
+                        <h3 class="text-3xl font-black text-white">1 240 000 <span class="text-lg text-gray-500">MAD</span></h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +8% ce mois</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Inventaire physique des composants</h2>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
+                    <div class="flex gap-4 w-full md:w-auto">
+                        <div class="relative w-full md:w-64">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
+                            <input type="text" placeholder="Rechercher un composant..." class="input-dark w-full rounded-lg pl-10 pr-4 py-2 text-sm">
+                        </div>
+                        <div class="relative w-full md:w-48">
+                            <select class="input-dark w-full rounded-lg pl-3 pr-8 py-2 text-sm appearance-none cursor-pointer text-gray-300">
+                                <option class="bg-[#0c0d12]">Toutes les zones</option>
+                                <option class="bg-[#0c0d12]">Zone A</option>
+                                <option class="bg-[#0c0d12]">Zone B</option>
+                                <option class="bg-[#0c0d12]">Zone C</option>
+                                <option class="bg-[#0c0d12]">Zone D</option>
+                                <option class="bg-[#0c0d12]">Zone E</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <button class="btn-neon px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 w-full md:w-auto">
+                        <i data-lucide="package-plus" class="w-4 h-4"></i> Enregistrer une réception
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-2xl overflow-hidden overflow-x-auto border border-white/10">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                        <thead>
+                            <tr class="bg-black/40">
+                                <th class="text-xs uppercase text-gray-400 font-semibold p-4 border-b border-white/5">Composant</th>
+                                <th class="text-xs uppercase text-gray-400 font-semibold p-4 border-b border-white/5">Zone</th>
+                                <th class="text-xs uppercase text-gray-400 font-semibold p-4 border-b border-white/5 text-center">Rangée</th>
+                                <th class="text-xs uppercase text-gray-400 font-semibold p-4 border-b border-white/5 text-center">Étagère</th>
+                                <th class="text-xs uppercase text-gray-400 font-semibold p-4 border-b border-white/5 text-center">Stock actuel</th>
+                                <th class="text-xs uppercase text-gray-400 font-semibold p-4 border-b border-white/5 text-center">Stock minimum</th>
+                                <th class="text-xs uppercase text-gray-400 font-semibold p-4 border-b border-white/5">Statut</th>
+                                <th class="text-xs uppercase text-gray-400 font-semibold p-4 border-b border-white/5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Processeur Intel Core i7</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone A</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">3</td><td class="p-4 text-sm text-gray-400 text-center">2</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">45</td><td class="p-4 text-sm text-gray-500 text-center">20</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors" title="Mouvement"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors" title="Détail"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt row-alert border-b border-orange-500/20 hover:bg-orange-500/10 transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Processeur Intel Core i9</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone A</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">3</td><td class="p-4 text-sm text-gray-400 text-center">3</td>
+                                <td class="p-4 font-black text-orange-400 text-center text-lg">8</td><td class="p-4 text-sm text-gray-500 text-center">15</td>
+                                <td class="p-4"><span class="badge-pending px-2.5 py-1 text-xs font-bold rounded-full">Alerte</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Processeur AMD Ryzen 7</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone A</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">4</td><td class="p-4 text-sm text-gray-400 text-center">1</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">32</td><td class="p-4 text-sm text-gray-500 text-center">15</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Processeur AMD Ryzen 9</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone A</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">4</td><td class="p-4 text-sm text-gray-400 text-center">2</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">12</td><td class="p-4 text-sm text-gray-500 text-center">10</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">RAM DDR5 16GB</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone B</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">1</td><td class="p-4 text-sm text-gray-400 text-center">1</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">124</td><td class="p-4 text-sm text-gray-500 text-center">50</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">RAM DDR5 32GB</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone B</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">1</td><td class="p-4 text-sm text-gray-400 text-center">2</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">67</td><td class="p-4 text-sm text-gray-500 text-center">40</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">SSD NVMe 1TB</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone B</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">2</td><td class="p-4 text-sm text-gray-400 text-center">1</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">89</td><td class="p-4 text-sm text-gray-500 text-center">30</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt row-alert border-b border-orange-500/20 hover:bg-orange-500/10 transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">SSD NVMe 2TB</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone B</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">2</td><td class="p-4 text-sm text-gray-400 text-center">2</td>
+                                <td class="p-4 font-black text-orange-400 text-center text-lg">34</td><td class="p-4 text-sm text-gray-500 text-center">30</td>
+                                <td class="p-4"><span class="badge-pending px-2.5 py-1 text-xs font-bold rounded-full">Alerte</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Carte mère ASUS</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone C</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">1</td><td class="p-4 text-sm text-gray-400 text-center">1</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">28</td><td class="p-4 text-sm text-gray-500 text-center">20</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt row-alert border-b border-orange-500/20 hover:bg-orange-500/10 transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Carte mère MSI</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone C</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">1</td><td class="p-4 text-sm text-gray-400 text-center">2</td>
+                                <td class="p-4 font-black text-orange-400 text-center text-lg">19</td><td class="p-4 text-sm text-gray-500 text-center">20</td>
+                                <td class="p-4"><span class="badge-pending px-2.5 py-1 text-xs font-bold rounded-full">Alerte</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">GPU NVIDIA RTX 4070</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone C</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">2</td><td class="p-4 text-sm text-gray-400 text-center">1</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">15</td><td class="p-4 text-sm text-gray-500 text-center">10</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt row-critical border-b border-red-500/30 hover:bg-red-500/20 transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">GPU NVIDIA RTX 4090</td>
+                                <td class="p-4 text-sm text-white font-bold">Zone C</td>
+                                <td class="p-4 text-sm text-gray-300 text-center">2</td><td class="p-4 text-sm text-gray-300 text-center">2</td>
+                                <td class="p-4 font-black text-red-400 text-center text-lg">3</td><td class="p-4 text-sm text-gray-400 text-center">15</td>
+                                <td class="p-4"><span class="badge-critical px-2.5 py-1 text-xs font-bold rounded-full">Rupture critique</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-300 hover:text-white mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-300 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Alimentation 750W</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone D</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">1</td><td class="p-4 text-sm text-gray-400 text-center">1</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">56</td><td class="p-4 text-sm text-gray-500 text-center">25</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Alimentation 1000W</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone D</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">1</td><td class="p-4 text-sm text-gray-400 text-center">2</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">41</td><td class="p-4 text-sm text-gray-500 text-center">20</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Boîtier ATX Mid Tower</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone D</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">2</td><td class="p-4 text-sm text-gray-400 text-center">1</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">38</td><td class="p-4 text-sm text-gray-500 text-center">20</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Boîtier ATX Full Tower</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone D</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">2</td><td class="p-4 text-sm text-gray-400 text-center">2</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">22</td><td class="p-4 text-sm text-gray-500 text-center">15</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt hover:bg-white/[0.04] transition-colors">
+                                <td class="p-4 font-bold text-sm text-white">Câbles et visserie</td>
+                                <td class="p-4 text-sm text-gray-300 font-medium">Zone E</td>
+                                <td class="p-4 text-sm text-gray-400 text-center">1</td><td class="p-4 text-sm text-gray-400 text-center">1</td>
+                                <td class="p-4 font-bold text-white text-center text-lg">312</td><td class="p-4 text-sm text-gray-500 text-center">100</td>
+                                <td class="p-4"><span class="badge-active px-2.5 py-1 text-xs font-bold rounded-full">OK</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-gray-400 hover:text-[#F5C518] mx-1 transition-colors"><i data-lucide="arrow-right-left" class="w-4 h-4"></i></button>
+                                    <button class="text-gray-400 hover:text-white mx-1 transition-colors"><i data-lucide="file-clock" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Plan de l'entrepôt</h2>
+                </div>
+                
+                <div class="glass-panel p-8 rounded-2xl bg-black/40 border-white/5">
+                    <div class="grid grid-cols-3 grid-rows-2 gap-4 h-64 w-full max-w-4xl mx-auto">
+                        
+                        <div class="col-span-1 row-span-1 rounded-xl flex flex-col items-center justify-center border-2 border-orange-500/50 bg-orange-500/20 shadow-[inset_0_0_20px_rgba(249,115,22,0.1)]">
+                            <span class="text-orange-400 font-black text-xl mb-1">Zone A</span>
+                            <span class="text-xs text-orange-200 font-medium">4 composants</span>
+                        </div>
+
+                        <div class="col-span-1 row-span-1 rounded-xl flex flex-col items-center justify-center border-2 border-orange-500/50 bg-orange-500/20 shadow-[inset_0_0_20px_rgba(249,115,22,0.1)]">
+                            <span class="text-orange-400 font-black text-xl mb-1">Zone B</span>
+                            <span class="text-xs text-orange-200 font-medium">4 composants</span>
+                        </div>
+
+                        <div class="col-span-1 row-span-1 rounded-xl flex flex-col items-center justify-center border-2 border-red-500/60 bg-red-500/20 shadow-[inset_0_0_30px_rgba(239,68,68,0.2)]">
+                            <span class="text-red-400 font-black text-xl mb-1">Zone C</span>
+                            <span class="text-xs text-red-200 font-medium">4 composants</span>
+                        </div>
+
+                        <div class="col-span-2 row-span-1 rounded-xl flex flex-col items-center justify-center border border-white/10 bg-white/5">
+                            <span class="text-gray-300 font-black text-xl mb-1">Zone D</span>
+                            <span class="text-xs text-gray-500 font-medium">4 composants</span>
+                        </div>
+
+                        <div class="col-span-1 row-span-1 rounded-xl flex flex-col items-center justify-center border border-white/10 bg-white/5">
+                            <span class="text-gray-300 font-black text-xl mb-1">Zone E</span>
+                            <span class="text-xs text-gray-500 font-medium">1 composant</span>
+                        </div>
+
+                    </div>
+
+                    <div class="flex justify-center items-center gap-8 mt-8">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-white/10 border border-white/20"></div>
+                            <span class="text-xs text-gray-400 font-medium">OK (Normal)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-orange-500/40 border border-orange-500"></div>
+                            <span class="text-xs text-gray-400 font-medium">Alerte (Sous le seuil)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/40 border border-red-500"></div>
+                            <span class="text-xs text-gray-400 font-medium">Rupture critique</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Historique des mouvements récents</h2>
+                </div>
+                
+                <div class="glass-panel rounded-2xl overflow-hidden border border-white/5">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-black/30">
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Date & Heure</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Composant</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Type</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5 text-center">Quantité</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Référence</th>
+                                <th class="text-xs uppercase text-gray-500 font-semibold p-4 border-b border-white/5">Responsable</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                <td class="p-4 text-sm text-gray-300">Aujourd'hui 14h32</td>
+                                <td class="p-4 font-bold text-sm text-white">GPU RTX 4090</td>
+                                <td class="p-4"><span class="text-red-400 font-bold text-sm flex items-center gap-1"><i data-lucide="arrow-down-right" class="w-4 h-4"></i> Sortie</span></td>
+                                <td class="p-4 font-black text-white text-center text-lg">2</td>
+                                <td class="p-4 text-sm text-gray-400 font-mono">OP-2847</td>
+                                <td class="p-4 text-sm text-gray-400 flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">Y</div> Youssef Tahiri</td>
+                            </tr>
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                <td class="p-4 text-sm text-gray-300">Aujourd'hui 11h15</td>
+                                <td class="p-4 font-bold text-sm text-white">RAM DDR5 32GB</td>
+                                <td class="p-4"><span class="text-green-400 font-bold text-sm flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-4 h-4"></i> Entrée</span></td>
+                                <td class="p-4 font-black text-white text-center text-lg">45</td>
+                                <td class="p-4 text-sm text-gray-400 font-mono">FC-1923</td>
+                                <td class="p-4 text-sm text-gray-400 flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">Y</div> Youssef Tahiri</td>
+                            </tr>
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                <td class="p-4 text-sm text-gray-300">Hier 16h40</td>
+                                <td class="p-4 font-bold text-sm text-white">SSD NVMe 1TB</td>
+                                <td class="p-4"><span class="text-red-400 font-bold text-sm flex items-center gap-1"><i data-lucide="arrow-down-right" class="w-4 h-4"></i> Sortie</span></td>
+                                <td class="p-4 font-black text-white text-center text-lg">5</td>
+                                <td class="p-4 text-sm text-gray-400 font-mono">OP-2846</td>
+                                <td class="p-4 text-sm text-gray-400 flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">Y</div> Youssef Tahiri</td>
+                            </tr>
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                <td class="p-4 text-sm text-gray-300">Hier 09h20</td>
+                                <td class="p-4 font-bold text-sm text-white">Processeur i9</td>
+                                <td class="p-4"><span class="text-red-400 font-bold text-sm flex items-center gap-1"><i data-lucide="arrow-down-right" class="w-4 h-4"></i> Sortie</span></td>
+                                <td class="p-4 font-black text-white text-center text-lg">3</td>
+                                <td class="p-4 text-sm text-gray-400 font-mono">OP-2845</td>
+                                <td class="p-4 text-sm text-gray-400 flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">Y</div> Youssef Tahiri</td>
+                            </tr>
+                            <tr class="hover:bg-white/[0.02]">
+                                <td class="p-4 text-sm text-gray-300">12 avril</td>
+                                <td class="p-4 font-bold text-sm text-white">Câbles et visserie</td>
+                                <td class="p-4"><span class="text-green-400 font-bold text-sm flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-4 h-4"></i> Entrée</span></td>
+                                <td class="p-4 font-black text-white text-center text-lg">200</td>
+                                <td class="p-4 text-sm text-gray-400 font-mono">FC-1901</td>
+                                <td class="p-4 text-sm text-gray-400 flex items-center gap-2"><div class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">Y</div> Youssef Tahiri</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="h-12"></div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

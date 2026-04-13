@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - Plateforme NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+            overflow-x: hidden;
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost-sm {
+            background: transparent;
+            color: #9ca3af;
+            border: 1px solid rgba(156, 163, 175, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost-sm:hover {
+            background: rgba(156, 163, 175, 0.1);
+            border-color: #9ca3af;
+            color: white;
+        }
+        
+        .btn-ghost-red {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost-red:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        /* Filter Tabs */
+        .filter-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #9ca3af;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .filter-btn:hover {
+            border-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .filter-btn.active {
+            background-color: #F5C518;
+            color: #08090c;
+            border-color: #F5C518;
+        }
+
+        /* Inputs */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        .nexus-brand-sm { display: inline-flex; align-items: center; }
+        .brand-logo-sm { height: 14px; vertical-align: middle; }
+        .brand-suffix-sm { font-weight: 700; color: #FFFFFF; font-size: 12px; letter-spacing: -0.02em; margin-left: 1px; }
+
+        /* Tables & Badges */
+        .table-row-alt:nth-child(even):not(.row-alert):not(.row-warning) { background-color: rgba(255, 255, 255, 0.02); }
+        .row-alert { background-color: rgba(239, 68, 68, 0.03); }
+        .row-warning { background-color: rgba(249, 115, 22, 0.03); }
+
+        .badge-green { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .badge-orange { background-color: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .badge-red { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .badge-gray { background-color: rgba(156, 163, 175, 0.1); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.2); }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.95); display: none; }
+        }
+        .animate-fade-out { animation: fadeOut 0.3s ease-in forwards; }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 text-[#F5C518]"></i> Tableau de bord
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="building" class="w-5 h-5"></i> Entreprises
+                </a>
+                <a href="#" class="flex items-center justify-between px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="clock" class="w-5 h-5"></i> Demandes en attente
+                    </div>
+                    <span id="sidebar-badge" class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i> Abonnements
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="activity" class="w-5 h-5"></i> Logs activité
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium mt-4">
+                    <i data-lucide="settings" class="w-5 h-5"></i> Paramètres plateforme
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[#F5C518]/10 border border-[#F5C518]/30 flex items-center justify-center shrink-0">
+                        <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"></span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-white">Super Admin</p>
+                        <p class="text-xs text-gray-500">NEXUS Platform</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <h1 class="text-xl font-bold text-white">Tableau de bord plateforme</h1>
+            
+            <div class="flex items-center gap-6">
+                <button class="relative text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="bell" class="w-6 h-6"></i>
+                    <span id="topbar-badge" class="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full border-2 border-[#08090c] flex items-center justify-center">3</span>
+                </button>
+                <div class="w-px h-6 bg-white/10"></div>
+                <div class="flex items-center gap-2">
+                    <span class="nexus-brand"><img src="logo.png" alt="N" class="brand-logo"><span class="brand-suffix">exus</span></span>
+                    <span class="text-sm font-medium text-gray-500 tracking-wider">Platform</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-10">
+            
+            <section>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Entreprises actives</p>
+                        <h3 class="text-3xl font-black text-white">12</h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +2 ce mois</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border-l-2 border-orange-500">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Demandes en attente</p>
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-3xl font-black text-orange-400" id="kpi-demandes">3</h3>
+                            <span class="badge-orange px-2 py-0.5 text-[10px] font-bold rounded uppercase">Action requise</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Utilisateurs totaux</p>
+                        <h3 class="text-3xl font-black text-white">87</h3>
+                        <p class="text-xs text-green-400 mt-2 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i> +8 ce mois</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <p class="text-gray-400 text-sm font-medium mb-1">Agents NEXUS actifs</p>
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-3xl font-black text-white">9</h3>
+                            <span class="badge-green px-2 py-0.5 text-[10px] font-bold rounded uppercase">En production</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="glass-panel p-6 md:p-8 rounded-2xl border-2 border-[#F5C518]/30 relative">
+                    <div class="absolute top-6 right-6">
+                        <span id="section-badge" class="bg-[#F5C518] text-[#08090c] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">3 demandes</span>
+                    </div>
+                    <div class="flex items-center mb-6 gap-3">
+                        <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-xl font-bold text-white">Demandes de création d'espace en attente</h2>
+                    </div>
+
+                    <div class="space-y-4" id="demandes-container">
+                        
+                        <div class="demande-card bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all duration-300">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-black text-lg shrink-0">AP</div>
+                                <div>
+                                    <h4 class="text-white font-bold text-base mb-0.5">Entreprise AutoParts Maroc</h4>
+                                    <p class="text-xs text-gray-400 font-medium">Responsable : Karim Benjelloun — karim@autoparts.ma</p>
+                                    <div class="flex items-center gap-3 mt-1.5">
+                                        <span class="text-[10px] text-gray-500 font-mono">12 Avril 2026</span>
+                                        <span class="px-2 py-0.5 bg-white/5 text-gray-300 text-[9px] font-bold rounded uppercase">Secteur Automobile</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0 action-btns">
+                                <button class="btn-ghost-red px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 flex-1 md:flex-auto btn-refuser">
+                                    Refuser <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors flex-1 md:flex-auto btn-approuver">
+                                    Approuver <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <div class="hidden w-full md:w-auto flex-col gap-2 mt-2 md:mt-0 refus-form">
+                                <input type="text" placeholder="Motif du refus..." class="input-dark w-full md:w-64 rounded-lg px-3 py-2 text-xs">
+                                <div class="flex gap-2 justify-end">
+                                    <button class="text-gray-500 hover:text-white text-xs font-bold px-2 py-1 btn-cancel-refus">Annuler</button>
+                                    <button class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded hover:bg-red-600 btn-confirm-refus">Confirmer</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="demande-card bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all duration-300">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-black text-lg shrink-0">PT</div>
+                                <div>
+                                    <h4 class="text-white font-bold text-base mb-0.5">Entreprise PharmaTech</h4>
+                                    <p class="text-xs text-gray-400 font-medium">Responsable : Leila Chraibi — l.chraibi@pharmatech.ma</p>
+                                    <div class="flex items-center gap-3 mt-1.5">
+                                        <span class="text-[10px] text-gray-500 font-mono">11 Avril 2026</span>
+                                        <span class="px-2 py-0.5 bg-white/5 text-gray-300 text-[9px] font-bold rounded uppercase">Secteur Pharmaceutique</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0 action-btns">
+                                <button class="btn-ghost-red px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 flex-1 md:flex-auto btn-refuser">
+                                    Refuser <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors flex-1 md:flex-auto btn-approuver">
+                                    Approuver <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <div class="hidden w-full md:w-auto flex-col gap-2 mt-2 md:mt-0 refus-form">
+                                <input type="text" placeholder="Motif du refus..." class="input-dark w-full md:w-64 rounded-lg px-3 py-2 text-xs">
+                                <div class="flex gap-2 justify-end">
+                                    <button class="text-gray-500 hover:text-white text-xs font-bold px-2 py-1 btn-cancel-refus">Annuler</button>
+                                    <button class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded hover:bg-red-600 btn-confirm-refus">Confirmer</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="demande-card bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all duration-300">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-black text-lg shrink-0">AS</div>
+                                <div>
+                                    <h4 class="text-white font-bold text-base mb-0.5">Entreprise AgroSupply</h4>
+                                    <p class="text-xs text-gray-400 font-medium">Responsable : Hassan Filali — h.filali@agrosupply.ma</p>
+                                    <div class="flex items-center gap-3 mt-1.5">
+                                        <span class="text-[10px] text-gray-500 font-mono">10 Avril 2026</span>
+                                        <span class="px-2 py-0.5 bg-white/5 text-gray-300 text-[9px] font-bold rounded uppercase">Secteur Agroalimentaire</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0 action-btns">
+                                <button class="btn-ghost-red px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 flex-1 md:flex-auto btn-refuser">
+                                    Refuser <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors flex-1 md:flex-auto btn-approuver">
+                                    Approuver <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <div class="hidden w-full md:w-auto flex-col gap-2 mt-2 md:mt-0 refus-form">
+                                <input type="text" placeholder="Motif du refus..." class="input-dark w-full md:w-64 rounded-lg px-3 py-2 text-xs">
+                                <div class="flex gap-2 justify-end">
+                                    <button class="text-gray-500 hover:text-white text-xs font-bold px-2 py-1 btn-cancel-refus">Annuler</button>
+                                    <button class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded hover:bg-red-600 btn-confirm-refus">Confirmer</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Entreprises sur la plateforme</h2>
+                </div>
+
+                <div class="bg-[#0c0d12] p-4 rounded-xl border border-white/5 mb-4 flex flex-col lg:flex-row items-center justify-between gap-4">
+                    <div class="relative w-full lg:w-80">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
+                        <input type="text" placeholder="Rechercher entreprise, admin..." class="input-dark w-full rounded-lg pl-11 pr-4 py-2.5 text-sm">
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2 w-full lg:w-auto" id="company-filters">
+                        <button class="filter-btn active" data-filter="all">Toutes</button>
+                        <button class="filter-btn" data-filter="active">Actives</button>
+                        <button class="filter-btn" data-filter="config">En attente / Config</button>
+                        <button class="filter-btn" data-filter="suspended">Suspendues</button>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl overflow-hidden border border-white/5 overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[1200px]" id="companies-table">
+                        <thead>
+                            <tr class="bg-black/40">
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider w-16">Logo</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider">Entreprise</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider">Secteur</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider">Admin</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-center">Utilisateurs</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-center">Agent actif</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-center">Abonnement</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-center">Statut</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider">Date création</th>
+                                <th class="p-4 border-b border-white/5 text-xs text-gray-400 font-bold uppercase tracking-wider text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-[#F5C518] text-[#08090c] font-black flex items-center justify-center text-xs">TB</div></td>
+                                <td class="p-4 font-bold text-white">TechBuild Industries</td>
+                                <td class="p-4 text-gray-300">Hardware</td>
+                                <td class="p-4 text-gray-300">Ahmed Bennani</td>
+                                <td class="p-4 text-center font-bold text-white">8</td>
+                                <td class="p-4 text-center"><span class="badge-green px-2 py-0.5 text-[9px] font-bold rounded uppercase">Actif</span></td>
+                                <td class="p-4 text-center"><span class="text-[#F5C518] font-bold">Pro</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">01 Mars 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail" data-id="techbuild">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2" title="Suspendre"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-blue-500 text-white font-black flex items-center justify-center text-xs">OC</div></td>
+                                <td class="p-4 font-bold text-white">OCP Group</td>
+                                <td class="p-4 text-gray-300">Chimie</td>
+                                <td class="p-4 text-gray-300">Mohammed Alami</td>
+                                <td class="p-4 text-center font-bold text-white">15</td>
+                                <td class="p-4 text-center"><span class="badge-green px-2 py-0.5 text-[9px] font-bold rounded uppercase">Actif</span></td>
+                                <td class="p-4 text-center"><span class="text-green-400 font-bold">Enterprise</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">15 Fév 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-gray-500 text-white font-black flex items-center justify-center text-xs">IS</div></td>
+                                <td class="p-4 font-bold text-white">Ismant</td>
+                                <td class="p-4 text-gray-300">Industrie</td>
+                                <td class="p-4 text-gray-300">Youssef Benali</td>
+                                <td class="p-4 text-center font-bold text-white">6</td>
+                                <td class="p-4 text-center"><span class="badge-orange px-2 py-0.5 text-[9px] font-bold rounded uppercase">En config</span></td>
+                                <td class="p-4 text-center"><span class="text-gray-300 font-bold">Starter</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">20 Fév 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-green-500 text-white font-black flex items-center justify-center text-xs">LS</div></td>
+                                <td class="p-4 font-bold text-white">Lesieur Cristal</td>
+                                <td class="p-4 text-gray-300">Agroalimentaire</td>
+                                <td class="p-4 text-gray-300">Sara Tazi</td>
+                                <td class="p-4 text-center font-bold text-white">10</td>
+                                <td class="p-4 text-center"><span class="badge-green px-2 py-0.5 text-[9px] font-bold rounded uppercase">Actif</span></td>
+                                <td class="p-4 text-center"><span class="text-[#F5C518] font-bold">Pro</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">05 Mars 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-red-600 text-white font-black flex items-center justify-center text-xs">RN</div></td>
+                                <td class="p-4 font-bold text-white">Renault Maroc</td>
+                                <td class="p-4 text-gray-300">Automobile</td>
+                                <td class="p-4 text-gray-300">Pierre Dubois</td>
+                                <td class="p-4 text-center font-bold text-white">22</td>
+                                <td class="p-4 text-center"><span class="badge-green px-2 py-0.5 text-[9px] font-bold rounded uppercase">Actif</span></td>
+                                <td class="p-4 text-center"><span class="text-green-400 font-bold">Enterprise</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">10 Jan 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="row-warning border-b border-orange-500/10 hover:bg-orange-500/10 transition-colors" data-status="config">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-purple-500 text-white font-black flex items-center justify-center text-xs">DT</div></td>
+                                <td class="p-4 font-bold text-white">DigiTech Solutions</td>
+                                <td class="p-4 text-gray-300">IT</td>
+                                <td class="p-4 text-gray-300">Amine Raji</td>
+                                <td class="p-4 text-center font-bold text-white">4</td>
+                                <td class="p-4 text-center"><span class="badge-gray px-2 py-0.5 text-[9px] font-bold rounded uppercase">Inactif</span></td>
+                                <td class="p-4 text-center"><span class="text-gray-300 font-bold">Starter</span></td>
+                                <td class="p-4 text-center"><span class="badge-orange px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">En config.</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">08 Avril 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-green-500 hover:text-green-400 ml-2" title="Activer"><i data-lucide="play" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-orange-500 text-white font-black flex items-center justify-center text-xs">SM</div></td>
+                                <td class="p-4 font-bold text-white">SafiMetal</td>
+                                <td class="p-4 text-gray-300">Métallurgie</td>
+                                <td class="p-4 text-gray-300">Rachid Ouali</td>
+                                <td class="p-4 text-center font-bold text-white">7</td>
+                                <td class="p-4 text-center"><span class="badge-green px-2 py-0.5 text-[9px] font-bold rounded uppercase">Actif</span></td>
+                                <td class="p-4 text-center"><span class="text-[#F5C518] font-bold">Pro</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">22 Mars 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="row-warning border-b border-orange-500/10 hover:bg-orange-500/10 transition-colors" data-status="config">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-teal-500 text-white font-black flex items-center justify-center text-xs">CT</div></td>
+                                <td class="p-4 font-bold text-white">CasaTech</td>
+                                <td class="p-4 text-gray-300">Électronique</td>
+                                <td class="p-4 text-gray-300">Nadia Bennani</td>
+                                <td class="p-4 text-center font-bold text-white">5</td>
+                                <td class="p-4 text-center"><span class="badge-orange px-2 py-0.5 text-[9px] font-bold rounded uppercase">En config</span></td>
+                                <td class="p-4 text-center"><span class="text-gray-300 font-bold">Starter</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">01 Avril 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-pink-500 text-white font-black flex items-center justify-center text-xs">MP</div></td>
+                                <td class="p-4 font-bold text-white">MarocPlast</td>
+                                <td class="p-4 text-gray-300">Plastique</td>
+                                <td class="p-4 text-gray-300">Hamid Ziani</td>
+                                <td class="p-4 text-center font-bold text-white">9</td>
+                                <td class="p-4 text-center"><span class="badge-green px-2 py-0.5 text-[9px] font-bold rounded uppercase">Actif</span></td>
+                                <td class="p-4 text-center"><span class="text-[#F5C518] font-bold">Pro</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">12 Mars 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt border-b border-white/5 hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-blue-300 text-[#08090c] font-black flex items-center justify-center text-xs">AT</div></td>
+                                <td class="p-4 font-bold text-white">AtlasTrans</td>
+                                <td class="p-4 text-gray-300">Transport</td>
+                                <td class="p-4 text-gray-300">Khalid Fassi</td>
+                                <td class="p-4 text-center font-bold text-white">11</td>
+                                <td class="p-4 text-center"><span class="badge-green px-2 py-0.5 text-[9px] font-bold rounded uppercase">Actif</span></td>
+                                <td class="p-4 text-center"><span class="text-green-400 font-bold">Enterprise</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">18 Fév 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="row-alert border-b border-red-500/10 hover:bg-red-500/10 transition-colors" data-status="suspended">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-red-900 text-white font-black flex items-center justify-center text-xs">FP</div></td>
+                                <td class="p-4 font-bold text-white">FertiPlus</td>
+                                <td class="p-4 text-gray-300">Agriculture</td>
+                                <td class="p-4 text-gray-300">Mounia Alaoui</td>
+                                <td class="p-4 text-center font-bold text-white">3</td>
+                                <td class="p-4 text-center"><span class="badge-gray px-2 py-0.5 text-[9px] font-bold rounded uppercase">Inactif</span></td>
+                                <td class="p-4 text-center"><span class="text-gray-300 font-bold">Starter</span></td>
+                                <td class="p-4 text-center"><span class="badge-red px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Suspendue</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">25 Mars 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-green-500 hover:text-green-400 ml-2" title="Réactiver"><i data-lucide="power" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt hover:bg-white/[0.04] transition-colors" data-status="active">
+                                <td class="p-4"><div class="w-8 h-8 rounded-full bg-gray-400 text-[#08090c] font-black flex items-center justify-center text-xs">NB</div></td>
+                                <td class="p-4 font-bold text-white">NordBat</td>
+                                <td class="p-4 text-gray-300">Construction</td>
+                                <td class="p-4 text-gray-300">Tarik Sebti</td>
+                                <td class="p-4 text-center font-bold text-white">6</td>
+                                <td class="p-4 text-center"><span class="badge-green px-2 py-0.5 text-[9px] font-bold rounded uppercase">Actif</span></td>
+                                <td class="p-4 text-center"><span class="text-[#F5C518] font-bold">Pro</span></td>
+                                <td class="p-4 text-center"><span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase">Active</span></td>
+                                <td class="p-4 text-gray-400 font-mono text-xs">28 Fév 2026</td>
+                                <td class="p-4 text-right whitespace-nowrap">
+                                    <button class="btn-ghost-sm px-3 py-1.5 rounded-lg text-xs font-bold btn-detail">Voir</button>
+                                    <button class="text-gray-500 hover:text-red-400 ml-2"><i data-lucide="power-off" class="w-4 h-4"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="detail-section">
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white" id="dt-title">Fiche entreprise — TechBuild Industries</h2>
+                </div>
+
+                <div class="glass-panel p-6 md:p-8 rounded-2xl border border-white/5 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Informations générales</h3>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-6 flex flex-col h-[280px]">
+                                <div class="flex items-center gap-5 mb-6 border-b border-white/5 pb-4">
+                                    <div class="w-[60px] h-[60px] rounded-full bg-[#F5C518] text-[#08090c] font-black text-xl flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(245,197,24,0.3)]" id="dt-logo">TB</div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-white mb-1" id="dt-name">TechBuild Industries</h4>
+                                        <span class="px-2 py-0.5 bg-white/5 border border-white/10 text-gray-300 text-[10px] font-bold rounded uppercase" id="dt-secteur">Hardware assemblage PC et serveurs</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 text-sm flex-1">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Admin</span>
+                                        <span class="font-bold text-white" id="dt-admin">Ahmed Bennani</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Email</span>
+                                        <span class="font-medium text-gray-300" id="dt-email">admin@techbuild.ma</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-400">Date création</span>
+                                        <span class="font-mono text-gray-400 text-xs" id="dt-date">01 Mars 2026</span>
+                                    </div>
+                                    <div class="flex justify-between items-center pt-2">
+                                        <span class="text-[#F5C518] font-bold" id="dt-plan">Abonnement Pro</span>
+                                        <span class="badge-green px-2.5 py-1 text-[10px] font-bold rounded-full uppercase" id="dt-statut">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Statistiques d'utilisation ce mois</h3>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-6 flex flex-col h-[280px]">
+                                <div class="mb-5 pb-5 border-b border-white/5">
+                                    <div class="flex justify-between items-end mb-2">
+                                        <span class="text-sm font-medium text-gray-300">Utilisateurs actifs</span>
+                                        <span class="font-bold text-white"><span class="text-xl">8</span> <span class="text-gray-500">/ 10 max (Plan Pro)</span></span>
+                                    </div>
+                                    <div class="w-full h-2 bg-black/50 rounded-full overflow-hidden border border-white/5">
+                                        <div class="h-full bg-[#F5C518]" style="width: 80%"></div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 flex-1">
+                                    <div class="bg-black/30 rounded-lg p-3 text-center border border-white/5">
+                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Actions totales</p>
+                                        <p class="text-xl font-black text-white">4 236</p>
+                                    </div>
+                                    <div class="bg-black/30 rounded-lg p-3 text-center border border-white/5">
+                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Appels d'offre</p>
+                                        <p class="text-xl font-black text-white">23</p>
+                                    </div>
+                                    <div class="bg-black/30 rounded-lg p-3 text-center border border-white/5">
+                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Commandes traitées</p>
+                                        <p class="text-xl font-black text-white">47</p>
+                                    </div>
+                                    <div class="bg-black/30 rounded-lg p-3 text-center border border-white/5">
+                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Retours / Prédictions</p>
+                                        <p class="text-lg font-black text-[#F5C518]">7 <span class="text-gray-500 font-medium">/ 12</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Modules activés</h3>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm">
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-gray-300">Gestion stock</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-gray-300">Appels d'offre</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-gray-300">Comparaison devis</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-gray-300">Commandes fournisseurs</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-gray-300">Sélection transporteur</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-gray-300">Suivi livraison</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-gray-300">Gestion retours</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-gray-300">Portail client</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-[#F5C518] font-medium">Analytics ML</span></div>
+                                <div class="flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-green-400"></i> <span class="text-[#F5C518] font-medium">Agent IA conversationnel</span></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Logs récents</h3>
+                            <div class="bg-white/[0.02] border border-white/5 rounded-xl p-5 h-full">
+                                <div class="space-y-4 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <span class="text-[10px] text-gray-500 font-mono shrink-0 mt-0.5">13 Avr 14h32</span>
+                                        <span class="text-gray-300 leading-tight">Agent NEXUS déclenché automatiquement pour rupture GPU RTX 4090</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <span class="text-[10px] text-gray-500 font-mono shrink-0 mt-0.5">13 Avr 10h15</span>
+                                        <span class="text-gray-300 leading-tight">Ordre production OP-2848 créé automatiquement</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <span class="text-[10px] text-gray-500 font-mono shrink-0 mt-0.5">13 Avr 09h48</span>
+                                        <span class="text-gray-300 leading-tight">Appel d'offre AO-2026-047 envoyé à 3 fournisseurs</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <span class="text-[10px] text-gray-500 font-mono shrink-0 mt-0.5">12 Avr 16h55</span>
+                                        <span class="text-gray-300 leading-tight">Devis AMDSupply reçu et analysé automatiquement</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <span class="text-[10px] text-gray-500 font-mono shrink-0 mt-0.5">12 Avr 09h47</span>
+                                        <span class="text-gray-300 leading-tight">Bon de commande BC-2026-0312 généré et envoyé</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Vue globale plateforme NEXUS</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-5">Répartition par secteur</h3>
+                        <div class="space-y-3 flex-1 flex flex-col justify-center">
+                            <div class="flex items-center gap-3"><span class="w-24 text-xs text-gray-300">Autres</span><div class="flex-1 h-2 bg-black/50 rounded-full"><div class="h-full bg-[#F5C518] rounded-full" style="width: 24%"></div></div><span class="w-8 text-right text-xs font-bold">24%</span></div>
+                            <div class="flex items-center gap-3"><span class="w-24 text-xs text-gray-300">Automobile</span><div class="flex-1 h-2 bg-black/50 rounded-full"><div class="h-full bg-blue-500 rounded-full" style="width: 17%"></div></div><span class="w-8 text-right text-xs font-bold">17%</span></div>
+                            <div class="flex items-center gap-3"><span class="w-24 text-xs text-gray-300">Industrie</span><div class="flex-1 h-2 bg-black/50 rounded-full"><div class="h-full bg-gray-400 rounded-full" style="width: 15%"></div></div><span class="w-8 text-right text-xs font-bold">15%</span></div>
+                            <div class="flex items-center gap-3"><span class="w-24 text-xs text-gray-300">Chimie</span><div class="flex-1 h-2 bg-black/50 rounded-full"><div class="h-full bg-teal-500 rounded-full" style="width: 12%"></div></div><span class="w-8 text-right text-xs font-bold">12%</span></div>
+                            <div class="flex items-center gap-3"><span class="w-24 text-xs text-gray-300">Agro</span><div class="flex-1 h-2 bg-black/50 rounded-full"><div class="h-full bg-green-500 rounded-full" style="width: 10%"></div></div><span class="w-8 text-right text-xs font-bold">10%</span></div>
+                            <div class="flex items-center gap-3"><span class="w-24 text-xs text-gray-300">Transport</span><div class="flex-1 h-2 bg-black/50 rounded-full"><div class="h-full bg-indigo-400 rounded-full" style="width: 9%"></div></div><span class="w-8 text-right text-xs font-bold">9%</span></div>
+                            <div class="flex items-center gap-3"><span class="w-24 text-xs text-gray-300">Hardware</span><div class="flex-1 h-2 bg-black/50 rounded-full"><div class="h-full bg-orange-500 rounded-full" style="width: 8%"></div></div><span class="w-8 text-right text-xs font-bold">8%</span></div>
+                            <div class="flex items-center gap-3"><span class="w-24 text-xs text-gray-300">IT</span><div class="flex-1 h-2 bg-black/50 rounded-full"><div class="h-full bg-purple-500 rounded-full" style="width: 5%"></div></div><span class="w-8 text-right text-xs font-bold">5%</span></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col justify-center">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-6">Répartition par abonnement</h3>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="p-4 bg-white/5 rounded-xl border border-white/10">
+                                <p class="text-3xl font-black text-gray-400 mb-1">4</p>
+                                <p class="text-xs font-bold text-gray-500 uppercase">Starter</p>
+                            </div>
+                            <div class="p-4 bg-[#F5C518]/10 rounded-xl border border-[#F5C518]/30">
+                                <p class="text-3xl font-black text-[#F5C518] mb-1">6</p>
+                                <p class="text-xs font-bold text-[#F5C518] uppercase">Pro</p>
+                            </div>
+                            <div class="p-4 bg-green-500/10 rounded-xl border border-green-500/30">
+                                <p class="text-3xl font-black text-green-400 mb-1">3</p>
+                                <p class="text-xs font-bold text-green-500 uppercase">Enterprise</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-5">Activité globale ce mois</h3>
+                        <div class="space-y-4 text-sm flex-1 flex flex-col justify-center">
+                            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span class="text-gray-400">Total actions système</span>
+                                <span class="font-bold text-white">48 920</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span class="text-gray-400">Appels d'offre générés</span>
+                                <span class="font-bold text-white">187</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span class="text-gray-400">Commandes traitées</span>
+                                <span class="font-bold text-white">423</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span class="text-gray-400">Retours gérés</span>
+                                <span class="font-bold text-white">89</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[#F5C518]">Prédictions ML</span>
+                                <span class="font-black text-[#F5C518]">1 247</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="max-w-5xl mx-auto">
+                <div class="flex items-center mb-6 gap-3">
+                    <span class="w-1.5 h-6 bg-[#F5C518] rounded-full"></span>
+                    <h2 class="text-xl font-bold text-white">Revenus plateforme — Avril 2026</h2>
+                </div>
+
+                <div class="glass-panel p-6 md:p-8 rounded-2xl bg-gradient-to-r from-black/40 to-transparent border border-white/10">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                        
+                        <div class="text-center md:text-left shrink-0">
+                            <p class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">MRR (Monthly Recurring Revenue)</p>
+                            <h3 class="text-5xl font-black text-[#F5C518]">48 500 <span class="text-xl text-[#F5C518]/70">MAD</span></h3>
+                        </div>
+
+                        <div class="w-full md:w-px h-px md:h-16 bg-white/10 shrink-0"></div>
+
+                        <div class="flex-1 flex flex-col md:flex-row justify-around w-full gap-6">
+                            <div class="text-center">
+                                <p class="text-xs text-gray-500 mb-1">Starter (4 × 1 500)</p>
+                                <p class="text-lg font-bold text-white">6 000 MAD</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-[#F5C518] mb-1">Pro (6 × 4 500)</p>
+                                <p class="text-lg font-bold text-white">27 000 MAD</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-green-400 mb-1">Enterprise (3 × 8 500)</p>
+                                <p class="text-lg font-bold text-white">25 500 MAD</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-white/5 text-right">
+                        <p class="text-xs text-gray-500 font-medium">Total brut 58 500 MAD — Remises appliquées sur 3 contrats annuels.</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="h-12"></div>
+        </div>
+    </main>
+
+    <script>
+        // 1. Initialisation Lucide Icons
+        lucide.createIcons();
+
+        // 2. Filtrage du tableau Entreprises
+        const filterBtns = document.querySelectorAll('#company-filters .filter-btn');
+        const companyRows = document.querySelectorAll('#companies-table tbody tr');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Gestion des classes actives
+                filterBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                const filter = e.target.getAttribute('data-filter');
+
+                // Afficher/Cacher les lignes
+                companyRows.forEach(row => {
+                    const status = row.getAttribute('data-status');
+                    if (filter === 'all' || status === filter) {
+                        row.style.display = 'table-row';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // 3. Logique d'approbation/Refus des nouvelles demandes
+        const demandesContainer = document.getElementById('demandes-container');
+        const kpiDemandes = document.getElementById('kpi-demandes');
+        const sidebarBadge = document.getElementById('sidebar-badge');
+        const topbarBadge = document.getElementById('topbar-badge');
+        const sectionBadge = document.getElementById('section-badge');
+        let demandesCount = 3;
+
+        function updateBadges() {
+            demandesCount--;
+            
+            if (demandesCount > 0) {
+                kpiDemandes.textContent = demandesCount;
+                sidebarBadge.textContent = demandesCount;
+                topbarBadge.textContent = demandesCount;
+                sectionBadge.textContent = `${demandesCount} demande${demandesCount > 1 ? 's' : ''}`;
+            } else {
+                // Cacher les badges si 0
+                kpiDemandes.textContent = '0';
+                kpiDemandes.nextElementSibling.classList.replace('badge-orange', 'badge-green');
+                kpiDemandes.nextElementSibling.textContent = 'À jour';
+                sidebarBadge.style.display = 'none';
+                topbarBadge.style.display = 'none';
+                sectionBadge.style.display = 'none';
+                demandesContainer.innerHTML = '<p class="text-gray-400 text-sm italic text-center py-4">Aucune demande en attente.</p>';
+            }
+        }
+
+        // Action Approuver
+        document.querySelectorAll('.btn-approuver').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.demande-card');
+                const actionBtns = card.querySelector('.action-btns');
+                
+                // Remplacer les boutons par le badge de succès
+                actionBtns.innerHTML = '<span class="badge-green px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Approuvée — Email envoyé</span>';
+                lucide.createIcons();
+                
+                // Effacer la carte après 2s et update badges
+                setTimeout(() => {
+                    card.classList.add('animate-fade-out');
+                    setTimeout(() => {
+                        card.remove();
+                        updateBadges();
+                    }, 300);
+                }, 2000);
+            });
+        });
+
+        // Action Refuser (Ouvre le petit formulaire)
+        document.querySelectorAll('.btn-refuser').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.demande-card');
+                card.querySelector('.action-btns').classList.add('hidden');
+                card.querySelector('.refus-form').classList.remove('hidden');
+                card.querySelector('.refus-form').classList.add('flex');
+            });
+        });
+
+        // Annuler le refus
+        document.querySelectorAll('.btn-cancel-refus').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.demande-card');
+                card.querySelector('.refus-form').classList.add('hidden');
+                card.querySelector('.refus-form').classList.remove('flex');
+                card.querySelector('.action-btns').classList.remove('hidden');
+            });
+        });
+
+        // Confirmer le refus
+        document.querySelectorAll('.btn-confirm-refus').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.demande-card');
+                const refusForm = card.querySelector('.refus-form');
+                
+                refusForm.innerHTML = '<span class="text-red-400 text-xs font-bold flex items-center gap-2 py-1.5"><i data-lucide="x-circle" class="w-4 h-4"></i> Demande refusée</span>';
+                lucide.createIcons();
+
+                setTimeout(() => {
+                    card.classList.add('animate-fade-out');
+                    setTimeout(() => {
+                        card.remove();
+                        updateBadges();
+                    }, 300);
+                }, 1500);
+            });
+        });
+
+        // 4. Logique de chargement de la fiche détaillée
+        // Base de données simulée minimaliste pour l'exemple interactif
+        const companyDB = {
+            'techbuild': {
+                name: 'TechBuild Industries', logo: 'TB', logoBg: 'bg-[#F5C518] text-[#08090c]',
+                secteur: 'Hardware assemblage PC et serveurs', admin: 'Ahmed Bennani', email: 'admin@techbuild.ma',
+                date: '01 Mars 2026', plan: 'Abonnement Pro', statut: 'Active', statusColor: 'badge-green',
+                users: 8, maxUsers: 10, pct: '80%'
+            }
+            // Autres entreprises non implémentées pour garder le code concis. Le clic démo recharge TechBuild avec un effet visuel.
+        };
+
+        document.querySelectorAll('.btn-detail').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Focus sur la section détail
+                const detailSection = document.getElementById('detail-section');
+                detailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Animation de surbrillance
+                const panel = detailSection.querySelector('.glass-panel');
+                panel.classList.add('border-[#F5C518]', 'shadow-[0_0_30px_rgba(245,197,24,0.2)]');
+                setTimeout(() => {
+                    panel.classList.remove('border-[#F5C518]', 'shadow-[0_0_30px_rgba(245,197,24,0.2)]');
+                    panel.classList.add('border-white/5', 'shadow-[0_0_20px_rgba(0,0,0,0.3)]');
+                }, 1000);
+            });
+        });
+
+    </script>
+</body>
+</html>

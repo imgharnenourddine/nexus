@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent NEXUS - Assistant Achats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+            overflow: hidden;
+        }
+        
+        /* Glassmorphism Panels */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost-sm {
+            background: transparent;
+            color: #9ca3af;
+            border: 1px solid rgba(156, 163, 175, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-ghost-sm:hover {
+            background: rgba(156, 163, 175, 0.1);
+            border-color: #9ca3af;
+            color: white;
+        }
+
+        /* Inputs */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+
+        /* Logo Component */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 24px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 22px; letter-spacing: -0.02em; margin-left: 2px; }
+
+        .nexus-brand-sm { display: inline-flex; align-items: center; }
+        .brand-logo-sm { height: 14px; vertical-align: middle; }
+        .brand-suffix-sm { font-weight: 700; color: #FFFFFF; font-size: 12px; letter-spacing: -0.02em; margin-left: 1px; }
+
+        /* Chat Bubbles */
+        .msg-user {
+            background-color: #F5C518;
+            color: #08090c;
+            border-radius: 16px 16px 4px 16px;
+            padding: 12px 16px;
+            max-width: 70%;
+            align-self: flex-end;
+            font-weight: 500;
+        }
+        .msg-agent {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #d1d5db; /* gray-300 */
+            border-radius: 16px 16px 16px 4px;
+            padding: 14px 18px;
+            max-width: 75%;
+            align-self: flex-start;
+            line-height: 1.6;
+        }
+
+        /* Suggestions Cards */
+        .suggestion-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(245, 197, 24, 0.2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .suggestion-card:hover {
+            background: rgba(245, 197, 24, 0.05);
+            border-color: #F5C518;
+            color: #ffffff;
+        }
+
+        /* Typing Indicator Animation */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 4px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #F5C518;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-msg { animation: fadeInMsg 0.3s ease-out forwards; }
+
+        /* Scrollbar custom (dark) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-[#0c0d12] flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-6 border-b border-white/5">
+                <span class="nexus-brand">
+                    <img src="logo.png" alt="N" class="brand-logo">
+                    <span class="brand-suffix">exus</span>
+                </span>
+            </div>
+
+            <nav class="p-4 space-y-1 mt-4">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Tableau de bord
+                </a>
+                <a href="dashboard-fournisseurs.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Fournisseurs
+                </a>
+                <a href="appel-offre.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="send" class="w-5 h-5"></i> Appels d'offre
+                </a>
+                <a href="suivi-livraison.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="file-text" class="w-5 h-5"></i> Commandes fournisseurs
+                </a>
+                <a href="dashboard-stock.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.02] transition-colors font-medium">
+                    <i data-lucide="package" class="w-5 h-5"></i> Stock lecture seule
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 border-l-2 border-[#F5C518] text-white font-medium mt-4">
+                    <i data-lucide="cpu" class="w-5 h-5 text-[#F5C518]"></i> Agent IA
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center justify-between px-2 py-2">
+                <div class="flex items-center gap-3">
+                    <img src="techbuild.png" alt="TechBuild" class="w-10 h-10 rounded-full object-cover border border-[#F5C518]/20 bg-white">
+                    <div>
+                        <p class="text-sm font-bold text-white">Ahmed Bennani</p>
+                        <p class="text-xs text-gray-500">Resp. Achats</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#08090c] relative">
+        
+        <header class="h-20 flex-shrink-0 border-b border-white/5 bg-[#0c0d12]/50 backdrop-blur-md flex justify-between items-center px-8 z-10">
+            <div class="flex items-center gap-4">
+                <h1 class="text-xl font-bold text-white">Agent NEXUS — Assistant Achats</h1>
+                <div class="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span class="text-xs font-bold text-green-400 uppercase tracking-wider">Agent actif</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2 text-sm text-gray-300">
+                    <img src="techbuild.png" alt="TechBuild" class="w-7 h-7 rounded-full object-cover border border-white/10 bg-white">
+                    <span class="font-medium">TechBuild Industries</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 flex overflow-hidden">
+            
+            <div class="w-full lg:w-[70%] flex flex-col border-r border-white/5 relative">
+                
+                <div class="p-6 shrink-0 z-10 bg-gradient-to-b from-[#08090c] to-transparent">
+                    <div class="glass-panel p-4 rounded-xl border border-white/10 flex items-start gap-4">
+                        <div class="p-2 bg-[#F5C518]/10 rounded-lg shrink-0 border border-[#F5C518]/20">
+                            <i data-lucide="cpu" class="w-5 h-5 text-[#F5C518]"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white mb-1">Contexte agent actif</h3>
+                            <p class="text-xs text-gray-400 leading-relaxed">
+                                L'agent a accès aux données achats de TechBuild Industries : 7 fournisseurs actifs, historique 24 commandes, budget mensuel 100 000 MAD, 3 appels d'offre en cours, prédictions retard ML actives. Rôle connecté : Responsable Achats — accès limité aux données fournisseurs, achats et stock.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-container" class="flex-1 overflow-y-auto px-6 pb-24 flex flex-col gap-6" style="height: calc(100vh - 320px);">
+                    
+                    <div class="msg-user">
+                        Quel fournisseur choisir pour une commande urgente de RAM DDR5 ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Pour une commande urgente de RAM DDR5 je recommande KingstonPro. Délai moyen 14 jours le plus court parmi les fournisseurs RAM. Score actuel 81/100. Aucun retard sur les 3 dernières commandes. Prix moyen 1 500 MAD par unité. Stock disponible confirmé. Voulez-vous que je génère un appel d'offre maintenant ?
+                    </div>
+
+                    <div class="msg-user">
+                        Quel est mon budget restant ce mois ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Budget mensuel achats TechBuild : 100 000 MAD. Dépensé ce mois : 35 600 MAD commande AMDSupply BC-2026-0312 GPU RTX 4090. Restant disponible : 64 400 MAD. Engagements planifiés : KingstonPro RAM DDR5 22 500 MAD et SamsungSSD SSD NVMe 18 000 MAD. Budget réel disponible après engagements : 23 900 MAD. Attention : une nouvelle commande GPU dépasserait le budget mensuel restant.
+                    </div>
+
+                    <div class="msg-user">
+                        NvidiaPartner est-il fiable pour la prochaine commande GPU ?
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Non je déconseille NvidiaPartner pour une commande urgente. Probabilité de retard prédite par ML 73%. Retard estimé +4 jours supplémentaires. Score actuel 68/100 en baisse depuis 6 mois. 3 retours défectueux GPU RTX 4090 ce mois. Score proche du seuil de blacklist automatique 65/100. Je recommande AMDSupply comme alternative : score 89/100, délai 18 jours, prix compétitif 1 780 MAD par unité, aucun retour défectueux enregistré.
+                    </div>
+
+                    <div class="msg-user">
+                        Compare IntelDistrib et AMDSupply pour une commande de processeurs
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Comparaison IntelDistrib vs AMDSupply pour processeurs. IntelDistrib : score 92/100, délai moyen 21 jours, prix processeur i9 4 200 MAD, taux livraison à temps 91%, garantie 24 mois, conditions paiement 45 jours. AMDSupply : score 89/100, délai moyen 18 jours, prix Ryzen 9 3 800 MAD, taux livraison à temps 87%, garantie 18 mois, conditions paiement 30 jours. Recommandation : IntelDistrib pour les commandes planifiées grâce au score supérieur et à la garantie plus longue. AMDSupply pour les commandes urgentes grâce au délai plus court de 3 jours.
+                    </div>
+
+                    <div class="msg-user">
+                        Génère un appel d'offre pour 50 unités de RAM DDR5 32GB
+                    </div>
+
+                    <div class="msg-agent">
+                        <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                            <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                        </div>
+                        Appel d'offre généré pour 50 unités RAM DDR5 32GB. Budget estimé 75 000 MAD. Fournisseurs sélectionnés : KingstonPro Hong Kong score 81/100, SamsungSSD Corée score 95/100. Email professionnel rédigé par Mistral et prêt à envoyer. Objet : Demande de prix — RAM DDR5 32GB — 50 unités — TechBuild Industries. Voulez-vous que je l'envoie maintenant aux 2 fournisseurs ?
+                    </div>
+
+                    </div>
+
+                <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0c0d12] via-[#0c0d12]/90 to-transparent p-6 pt-10">
+                    <div class="relative max-w-4xl mx-auto flex items-center">
+                        <input type="text" id="chat-input" placeholder="Posez votre question à l'agent NEXUS..." class="w-full bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-2xl pl-6 pr-16 py-4 text-sm text-white focus:border-[#F5C518] focus:bg-white/[0.05] focus:outline-none transition-all shadow-lg" autocomplete="off">
+                        <button id="btn-send" class="absolute right-3 w-10 h-10 rounded-xl bg-[#F5C518] text-[#08090c] flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(245,197,24,0.3)]">
+                            <i data-lucide="send" class="w-4 h-4 ml-0.5 mt-0.5"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="hidden lg:flex w-[30%] bg-[#0c0d12]/50 flex-col overflow-y-auto p-6 space-y-8">
+                
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Questions suggérées</h2>
+                    </div>
+                    <div class="flex flex-col gap-2.5">
+                        <button class="suggestion-card btn-suggest">Quel fournisseur recommandes-tu pour les GPU ?</button>
+                        <button class="suggestion-card btn-suggest">Quel est mon budget restant ce mois ?</button>
+                        <button class="suggestion-card btn-suggest">Quels fournisseurs sont en risque de retard ?</button>
+                        <button class="suggestion-card btn-suggest">Compare les délais de tous les fournisseurs</button>
+                        <button class="suggestion-card btn-suggest">Génère un appel d'offre pour des SSD NVMe</button>
+                        <button class="suggestion-card btn-suggest">Quel fournisseur a le meilleur score ce mois ?</button>
+                        <button class="suggestion-card btn-suggest">Quelles commandes sont en transit actuellement ?</button>
+                        <button class="suggestion-card btn-suggest">NvidiaPartner va-t-il être blacklisté ?</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Contexte agent</h2>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl border border-white/5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Rôle</span>
+                            <span class="px-2 py-0.5 bg-orange-500/10 border border-orange-500/30 text-orange-400 text-[10px] font-bold rounded uppercase">Responsable Achats</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Entreprise</span>
+                            <span class="text-xs font-bold text-white">TechBuild Industries</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Données accessibles</span>
+                            <span class="text-xs font-bold text-white">Fournisseurs + Achats + Stock</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Dernière mise à jour</span>
+                            <span class="text-xs font-medium text-gray-300">Il y a 3 minutes</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-xs text-gray-500">Modèle</span>
+                            <span class="text-xs font-bold text-[#F5C518]">Mistral Large</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-2 mb-2">
+                            <span class="text-xs text-gray-500">Historique conversation</span>
+                            <span class="text-xs font-medium text-gray-300">5 messages</span>
+                        </div>
+                        <button class="btn-ghost-sm w-full py-2 rounded-lg text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Effacer la conversation
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center mb-4 gap-3">
+                        <span class="w-1 h-4 bg-[#F5C518] rounded-full"></span>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Actions rapides</h2>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <a href="dashboard-fournisseurs.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Voir les fournisseurs
+                        </a>
+                        <a href="appel-offre.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i> Nouvel appel d'offre
+                        </a>
+                        <a href="suivi-livraison.html" class="btn-ghost-sm py-3 rounded-xl text-xs font-bold flex justify-center items-center gap-2">
+                            <i data-lucide="bell" class="w-4 h-4"></i> Voir les commandes
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // 1. Initialisation Icônes
+        lucide.createIcons();
+
+        // 2. Éléments DOM
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const btnSend = document.getElementById('btn-send');
+        const suggestionBtns = document.querySelectorAll('.btn-suggest');
+
+        // 3. Scroll Automatique vers le bas
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        window.addEventListener('load', scrollToBottom);
+
+        // 4. Moteur de réponse par Mots-clés (Base de Connaissance Agent)
+        const getAgentResponse = (query) => {
+            const q = query.toLowerCase();
+            
+            if (q.includes('budget')) {
+                return "Budget mensuel 100 000 MAD. Dépensé 35 600 MAD. Restant 64 400 MAD. Engagements planifiés 40 500 MAD. Disponible réel 23 900 MAD.";
+            } 
+            else if (q.includes('fournisseur')) {
+                return "Fournisseurs actifs : SamsungSSD 95/100, IntelDistrib 92/100, AMDSupply 89/100, KingstonPro 81/100, LocalElec 85/100, AsusWholesale 77/100, NvidiaPartner 68/100 en alerte.";
+            } 
+            else if (q.includes('retard')) {
+                return "Fournisseurs à risque de retard : NvidiaPartner probabilité 73% retard estimé +4 jours, AsusWholesale probabilité 35% retard estimé +2 jours. Les autres fournisseurs ont un risque faible selon le modèle ML.";
+            } 
+            else if (q.includes('appel') || q.includes('offre')) {
+                return "Je peux générer un appel d'offre automatiquement. Précisez le composant et la quantité. Exemple : RAM DDR5 32GB 50 unités. Je sélectionnerai les meilleurs fournisseurs et rédigerai l'email professionnel via Mistral.";
+            } 
+            else if (q.includes('commande')) {
+                return "Commandes fournisseurs actives : BC-2026-0312 AMDSupply GPU RTX 4090 en transit livraison 28 Avril, BC-2026-0308 SamsungSSD SSD NVMe en transit livraison 20 Avril, BC-2026-0320 KingstonPro RAM planifié livraison 25 Avril.";
+            } 
+            else {
+                return "Je suis votre assistant achats. Je peux vous aider sur les fournisseurs, le budget, les appels d'offre, les commandes en cours et les prédictions de retard. Que souhaitez-vous savoir ?";
+            }
+        };
+
+        // 5. Générer le composant de "Réflexion"
+        const createTypingIndicator = () => {
+            const div = document.createElement('div');
+            div.className = 'msg-agent typing-box animate-msg';
+            div.id = 'typing-indicator';
+            div.innerHTML = `
+                <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                    <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent réfléchit</span>
+                </div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            return div;
+        };
+
+        // 6. Logique d'envoi et de réponse
+        const handleSend = () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Ajouter le message de l'utilisateur
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg-user animate-msg';
+            userMsg.textContent = text;
+            chatContainer.appendChild(userMsg);
+            
+            // Clear input and scroll
+            chatInput.value = '';
+            scrollToBottom();
+
+            // Ajouter l'indicateur de frappe
+            const typingIndicator = createTypingIndicator();
+            chatContainer.appendChild(typingIndicator);
+            scrollToBottom();
+
+            // Simuler le délai de l'API
+            setTimeout(() => {
+                // Supprimer l'indicateur
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+
+                // Créer la réponse de l'agent
+                const responseText = getAgentResponse(text);
+                const agentMsg = document.createElement('div');
+                agentMsg.className = 'msg-agent animate-msg';
+                agentMsg.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2 border-b border-white/10 pb-2">
+                        <span class="nexus-brand-sm"><img src="logo.png" alt="N" class="brand-logo-sm"><span class="brand-suffix-sm">exus</span></span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Agent</span>
+                    </div>
+                    ${responseText}
+                `;
+                
+                chatContainer.appendChild(agentMsg);
+                scrollToBottom();
+            }, 1500);
+        };
+
+        // 7. Event Listeners
+        btnSend.addEventListener('click', handleSend);
+        
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // 8. Event Listeners pour les Suggestions
+        suggestionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                chatInput.value = btn.textContent;
+                chatInput.focus();
+            });
+        });
+
+    </script>
+</body>
+</html>

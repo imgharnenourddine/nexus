@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Espace - NEXUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #08090c; 
+            color: #ffffff; 
+        }
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+        .text-gradient { 
+            background: linear-gradient(90deg, #F5C518, #FFFFFF); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        .btn-neon {
+            background: linear-gradient(90deg, #F5C518, #E0B000);
+            color: #08090c;
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 35px rgba(245, 197, 24, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        /* Style spécifique pour les inputs du formulaire */
+        .input-dark {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            border-color: #F5C518;
+            box-shadow: 0 0 10px rgba(245, 197, 24, 0.2);
+            outline: none;
+        }
+
+        /* Règle stricte Logo NEXUS */
+        .nexus-brand { display: inline-flex; align-items: center; }
+        .brand-logo { height: 28px; vertical-align: middle; }
+        .brand-suffix { font-weight: 700; color: #FFFFFF; font-size: 26px; letter-spacing: -0.02em; margin-left: 2px; }
+        
+        /* Custom File Upload Button */
+        input[type="file"]::file-selector-button {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            transition: all 0.2s ease;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: rgba(245, 197, 24, 0.2);
+            border-color: #F5C518;
+            color: #F5C518;
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden antialiased flex flex-col min-h-screen">
+
+    <nav class="fixed w-full z-50 glass-panel px-8 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="nexus-brand">
+                <img src="logo.png" alt="N" class="brand-logo">
+                <span class="brand-suffix">exus</span>
+            </span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="text-sm font-medium text-gray-400 hover:text-white transition flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Retour à l'accueil
+            </a>
+        </div>
+    </nav>
+
+    <div class="flex flex-1 pt-[72px]"> 
+        
+        <div class="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden border-r border-white/5">
+            <div class="absolute inset-0 bg-[#08090c]/80 z-10"></div>
+            
+            <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1200&auto=format&fit=crop" 
+                 alt="Future of Supply Chain" 
+                 class="absolute inset-0 w-full h-full object-cover grayscale opacity-50">
+            
+            <div class="relative z-20 text-center px-12">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-6 border border-[#F5C518]/30 bg-[#F5C518]/10 rounded-full text-[#F5C518] text-sm font-bold uppercase tracking-widest">
+                    <i data-lucide="network" class="w-4 h-4"></i>
+                    Rejoignez l'écosystème
+                </div>
+                <h2 class="text-5xl font-black leading-tight mb-6">
+                    Digitalisez votre <br>
+                    <span class="text-gradient">Supply Chain</span>
+                </h2>
+                <p class="text-gray-400 text-lg max-w-md mx-auto">
+                    Créez l'espace de votre entreprise pour automatiser vos flux, de l'approvisionnement à la livraison, grâce à l'Agent IA NEXUS.
+                </p>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-8 bg-[#0c0d12] relative overflow-hidden">
+            
+            <div class="absolute top-0 right-0 w-96 h-96 bg-[#F5C518]/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+            <div class="glass-panel w-full max-w-lg p-8 sm:p-12 rounded-3xl relative z-10">
+                
+                <div class="text-center mb-10">
+                    <span class="nexus-brand mb-4">
+                        <img src="logo.png" alt="N" class="brand-logo" style="height: 40px;">
+                        <span class="brand-suffix" style="font-size: 36px;">exus</span>
+                    </span>
+                    <h3 class="text-2xl font-black mb-2 mt-2">Créer votre espace</h3>
+                    <p class="text-gray-400 text-sm">Intégrez votre entreprise au réseau intelligent.</p>
+                </div>
+
+                <form class="space-y-5">
+                    
+                    <div>
+                        <label for="company" class="block text-sm font-semibold text-gray-300 mb-2">Nom de l'entreprise</label>
+                        <div class="relative">
+                            <i data-lucide="building" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
+                            <input type="text" id="company" placeholder="Ex: TechBuild Industries" class="input-dark w-full rounded-xl pl-10 pr-4 py-3 text-sm placeholder-gray-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="logo-upload" class="block text-sm font-semibold text-gray-300 mb-2">Logo de l'entreprise (Optionnel)</label>
+                        <div class="relative">
+                            <input type="file" id="logo-upload" accept="image/png, image/jpeg" class="input-dark w-full rounded-xl px-4 py-2 text-sm text-gray-400">
+                        </div>
+                    </div>
+
+                    <div class="w-full h-px bg-white/10 my-6"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="firstname" class="block text-sm font-semibold text-gray-300 mb-2">Prénom</label>
+                            <input type="text" id="firstname" placeholder="Ex: Ahmed" class="input-dark w-full rounded-xl px-4 py-3 text-sm placeholder-gray-500">
+                        </div>
+                        <div>
+                            <label for="lastname" class="block text-sm font-semibold text-gray-300 mb-2">Nom</label>
+                            <input type="text" id="lastname" placeholder="Ex: Alaoui" class="input-dark w-full rounded-xl px-4 py-3 text-sm placeholder-gray-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-semibold text-gray-300 mb-2">Email professionnel</label>
+                        <div class="relative">
+                            <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
+                            <input type="email" id="email" placeholder="contact@entreprise.com" class="input-dark w-full rounded-xl pl-10 pr-4 py-3 text-sm placeholder-gray-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-semibold text-gray-300 mb-2">Mot de passe</label>
+                        <div class="relative">
+                            <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
+                            <input type="password" id="password" placeholder="••••••••" class="input-dark w-full rounded-xl pl-10 pr-4 py-3 text-sm placeholder-gray-500">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-neon w-full py-4 rounded-xl font-bold text-lg tracking-wide mt-8 flex justify-center items-center gap-2">
+                        Initialiser l'espace <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </form>
+
+                <p class="text-center text-sm text-gray-400 mt-8">
+                    Votre entreprise a déjà un espace ? <a href="#" class="text-[#F5C518] hover:text-white font-bold transition-colors">Se connecter</a>
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
